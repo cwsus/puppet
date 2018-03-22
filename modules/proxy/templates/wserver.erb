@@ -1,0 +1,67 @@
+#
+# squid proxy webserver
+#
+
+PidFile                             ${APACHE_RUN_DIR}/proxy.caspersbox.com/httpd.pid
+ServerName                          proxy.caspersox.com
+ServerSignature                     On
+ServerTokens                        Prod
+UseCanonicalName                    On
+HostnameLookups                     Double
+ContentDigest                       On
+FileETag                            MTime Size
+DocumentRoot                        "/var/www/proxy.caspersbox.com/html"
+
+<Files "wpad.dat)">
+    AddType                         application/x-ns-proxy-autoconfig dat
+</Files>
+<Files "proxy.pac">
+    AddType                         application/x-ns-proxy-autoconfig pac
+</Files>
+
+<Directory />
+    AllowOverride                   none
+    Options                         none
+    Require                         all denied
+</Directory>
+
+<Directory /var/www/proxy.caspersbox.com/html/>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI
+    AllowOverride                   none
+
+    <RequireAny>
+        Require                     ip 192.168.10
+        Require                     ip 192.168.20
+    </RequireAny>
+</Directory>
+
+<Directory /var/www/proxy.caspersbox.com/error/>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI
+    AllowOverride                   none
+
+    <RequireAny>
+        Require                     ip 192.168.10
+        Require                     ip 192.168.20
+    </RequireAny>
+</Directory>
+
+<IfModule headers_module>
+    Header                          add S <%= scope.lookupvar("fqdn") %>
+</IfModule>
+
+ErrorDocument                       400 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       401 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       403 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       404 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       405 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       500 /error/proxy.caspersbox.com/errHandler.htm
+ErrorDocument                       503 /error/proxy.caspersbox.com/errHandler.htm
+
+Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:8080
+<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:8080>
+    LogLevel                        error
+    ErrorLog                        "|/usr/sbin/rotatelogs ${APACHE_LOG_ROOT}/proxy.caspersbox.com/error-%Y.%m.%d.log 86400"
+    CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_ROOT}/proxy.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined
+</VirtualHost>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet

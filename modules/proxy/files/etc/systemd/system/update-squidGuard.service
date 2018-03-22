@@ -1,0 +1,20 @@
+[Unit]
+Description=Download and install updated squidGuard blacklist
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=squid
+Group=squid
+Type=oneshot
+RemainAfterExit=no
+ExecStartPre=/usr/bin/wget -O /var/tmp/blacklist.tar.gz http://www.shallalist.de/Downloads/shallalist.tar.gz
+ExecStartPre=/bin/tar xvf /var/tmp/blacllist.tar.gz
+ExecStartPre=/bin/mv /var/tmp/BL/* /usr/local/squidGuard/db
+ExecStart=/usr/bin/squidGuard -d -b -c /etc/squid/squidGuard.conf -C all
+ExecStartPost=/usr/sbin/squid -k reconfigure
+ExecStartPost=/bin/rm -rf /var/tmp/BL
+ExecStartPost=/bin/rm -f /var/tmp/blacklist.tar.gz
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,45 @@
+! Configuration File for keepalived
+
+global_defs {
+    router_id <%= scope.lookupvar("hostname") %>
+
+    !notification_email {
+    !    webadm@caspersbox.com
+    !    sysadm@caspersbox.com
+    !}
+
+    ! notification_email_from sysadm@caspersbox.com
+    ! smtp_server 192.168.200.1
+    ! smtp_connect_timeout 30
+
+    vrrp_skip_check_adv_addr
+    vrrp_strict
+    vrrp_garp_interval 0
+    vrrp_gna_interval 0
+}
+
+vrrp_script chk_haproxy {
+    script "killall -0 haproxy"
+    interval 2
+    weight 2
+}
+
+vrrp_instance VI_1 {
+    interface eth0
+    state MASTER
+    virtual_router_id 50
+    priority <%= scope.lookupvar("priority") %>
+
+    virtual_ipaddress {
+        192.168.10.200;
+    }
+
+    authentication {
+        auth_type PASS
+        auth_pass 1111
+    }
+
+    track_script {
+        chk_haproxy
+    }
+}

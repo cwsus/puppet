@@ -1,0 +1,5 @@
+# /etc/puppetlabs/code/environments/production/data/common.yaml
+---
+profile::packages::is_dhcp: true
+classes:
+  role::base

@@ -1,0 +1,95 @@
+# Package generated configuration file
+# See the sshd_config(5) manpage for details
+
+#
+# Listener/Protocol
+<% if $ip_addr %>
+ListenAddress                           $ip_addr
+<% end %>
+Port                                    22
+Protocol                                2
+
+# HostKeys for protocol version 2
+HostKey                                 /etc/ssh/ssh_host_rsa_key
+HostKey                                 /etc/ssh/ssh_host_ed25519_key
+
+#
+# Ciphers/Keys
+#
+MACs                                    hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+Ciphers                                 chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+HostKeyAlgorithms                       ssh-ed25519,ssh-ed25519-cert-v01@openssh.com,ssh-rsa,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com
+KexAlgorithms                           curve25519-sha256@libssh.org,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group14-sha256,diffie-hellman-group-exchange-sha256
+
+#
+# Logging
+#
+SyslogFacility                          AUTHPRIV
+LogLevel                                INFO
+
+#
+# Authentication
+#
+UsePAM                                  yes
+LoginGraceTime                          60
+PermitRootLogin                         no
+StrictModes                             yes
+MaxAuthTries                            3
+MaxSessions                             2
+RekeyLimit                              default 1h
+
+#
+# Allow/Deny users/groups
+#
+AllowUsers
+AllowGroups                             sshusers
+DenyUsers                               root
+DenyGroups                              root
+
+#
+# Password and public key authentications.
+#
+PasswordAuthentication                  no
+PermitEmptyPasswords                    no
+PubkeyAuthentication                    yes
+AuthorizedKeysFile                      .ssh/authorized_keys
+
+#
+# Disable unused authentications mechanisms.
+#
+RSAAuthentication                       no
+RhostsRSAAuthentication                 no
+ChallengeResponseAuthentication         no
+KerberosAuthentication                  no
+GSSAPIAuthentication                    no
+HostbasedAuthentication                 no
+IgnoreUserKnownHosts                    yes
+IgnoreRhosts                            yes
+
+AllowAgentForwarding                    no
+AllowTcpForwarding                      yes
+GatewayPorts                            no
+X11Forwarding                           yes
+X11DisplayOffset                        10
+X11UseLocalhost                         yes
+PermitTTY                               yes
+PrintMotd                               yes
+PrintLastLog                            yes
+TCPKeepAlive                            yes
+UsePrivilegeSeparation                  sandbox
+PermitUserEnvironment                   no
+Compression                             no
+ClientAliveInterval                     900
+ClientAliveCountMax                     0
+ShowPatchLevel                          no
+UseDNS                                  no
+PidFile                                 /var/run/sshd.pid
+MaxStartups                             10:30:100
+PermitTunnel                            no
+VersionAddendum                         none
+Banner                                  /etc/ssh/sshd_banner
+
+# Allow client to pass locale environment variables
+AcceptEnv                               LANG LC_*
+
+Subsystem                               sftp /usr/libexec/openssh/sftp-server

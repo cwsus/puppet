@@ -1,0 +1,27 @@
+[Match]
+MACAddress=<%= @macaddress %>
+
+[Link]
+MACAddress=<%= @macaddress %>
+MTUBytes=1500
+
+<% if $static == 'true' %>
+[Network]
+Description=CWS
+DNS=192.168.20.6 192.168.20.7
+Domains=caspersbox.com network.caspersbox.com
+<% if $vlan %>
+VLAN=$vlan
+<% end %>
+
+[Address]
+Address=<%= scope('ipaddr') %>
+
+[Route]
+Gateway=<%= scope.('gateway') %>
+<% else %>
+[Network]
+DHCP=ipv4
+DNS=192.168.20.6 192.168.20.7
+Domains=caspersbox.com network.caspersbox.com
+<% end %>

@@ -1,0 +1,3 @@
+Cmnd_Alias DNSADM = /sbin/rndc reconfig, /sbin/rndc reload *, /sbin/rndc flush *, /sbin/rndc retransfer *, /bin/vi /var/named/chroot/etc/named.conf, /bin/vi /var/named/chroot/etc/rndc.conf, /bin/vi /var/named/chroot/etc/pki/*.key, /bin/vi /var/named/chroot/etc/zones.d/*, /bin/vi /var/named/chroot/etc/conf.d/*, /bin/vi /var/named/chroot/namedb/master/*, /bin/vi /var/named/chroot/namedb/slave/*, /bin/vi /var/named/chroot/namedb/dynamic/*, /bin/vi /var/named/chroot/namedb/
+
+%dnsadm         ALL=(named)    NOPASSWD: DNSADM

@@ -1,0 +1,6 @@
+# /etc/puppetlabs/code/environments/production/data/nodes/caspersb-pxesrc01.caspersbox.com.yaml
+---
+profile::packages::is_dhcp: false
+profile::packages::ip_addr: 192.168.10.29
+profile::packages::gateway: 192.168.10.1
+

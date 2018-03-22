@@ -1,0 +1,6 @@
+[Unit]
+Description=RKHunter update
+
+[Service]
+Type=oneshot
+ExecStart=/bin/rkhunter --propupd

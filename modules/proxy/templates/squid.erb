@@ -1,0 +1,117 @@
+visible_hostname                    proxy.caspersbox.com
+unique_hostname                     caspersb-proxy01.caspersbox.com
+dns_v4_first                        on
+
+http_port                           192.168.20.9:3128
+icp_port                            3130
+
+acl                                 cwsnet src 192.168.10.0/27                          # cwsnet
+acl                                 cwsnet src 192.168.20.0/27                          # cwsnet
+
+# no caching
+acl                                 no-cache        dstdomain   "/etc/squid/acls/no-cache.acl"
+
+# kids
+acl                                 AllowKids       arp         "/etc/squid/acls/kids.acl"
+acl                                 AllowKidsTime   time MTWH   14:30-22:00
+acl                                 AllowKidsTime   time F      14:30-23:00
+acl                                 AllowKidsTime   time A      08:00-23:00
+acl                                 AllowKidsTime   time S      08:00-22:00
+
+acl                                 GooglePorts     port        5228                    # https
+acl                                 GooglePorts     port        19305                   # google mtalk ?? idk
+
+acl                                 SSL_ports   port 443                                # standard ssl
+acl                                 SSL_Ports   port 873                                # rsync
+acl                                 Safe_ports  port 80                                 # http
+acl                                 Safe_ports  port 21                                 # ftp
+acl                                 Safe_ports  port 70                                 # gopher
+acl                                 Safe_ports  port 210                                # wais
+acl                                 Safe_ports  port 280                                # http-mgmt
+acl                                 Safe_ports  port 443                                # https
+acl                                 Safe_ports  port 488                                # gss-http
+acl                                 Safe_ports  port 591                                # filemaker
+acl                                 Safe_ports  port 777                                # multiling http
+acl                                 Safe_ports  port 873                                # rsync
+acl                                 Safe_ports  port 1025-65535                         # unregistered ports
+acl                                 CONNECT     method CONNECT
+
+# Bypass scan mime-types
+acl                                 bypass_scan_types_req req_mime_type -i ^text/
+acl                                 bypass_scan_types_req req_mime_type -i ^application/x-javascript
+acl                                 bypass_scan_types_req req_mime_type -i ^application/x-shockwave-flash
+acl                                 bypass_scan_types_req req_mime_type -i ^image/
+acl                                 bypass_scan_types_req req_mime_type -i ^video
+acl                                 bypass_scan_types_req req_mime_type -i ^audio
+acl                                 bypass_scan_types_req req_mime_type -i ^.*application\/x-mms-framed.*$
+
+acl                                 bypass_scan_types_rep rep_mime_type -i ^text/
+acl                                 bypass_scan_types_rep rep_mime_type -i ^application/x-javascript
+acl                                 bypass_scan_types_rep rep_mime_type -i ^application/x-shockwave-flash
+acl                                 bypass_scan_types_rep rep_mime_type -i ^image/
+acl                                 bypass_scan_types_rep rep_mime_type -i ^video
+acl                                 bypass_scan_types_rep rep_mime_type -i ^audio
+acl                                 bypass_scan_types_rep rep_mime_type -i ^.*application\/x-mms-framed.*$
+
+redirect_program                    /usr/bin/squidGuard -c /etc/squid/squidGuard.conf
+redirect_children                   20
+
+http_access                         deny        !Safe_ports !GooglePorts
+http_access                         deny        CONNECT !SSL_ports !GooglePorts
+http_access                         allow       localhost manager
+http_access                         deny        manager
+
+#
+# INSERT YOUR OWN RULE(S) HERE TO ALLOW ACCESS FROM YOUR CLIENTS
+#
+forwarded_for                       delete
+follow_x_forwarded_for              allow       cwsnet
+follow_x_forwarded_for              deny        all
+acl_uses_indirect_client            on
+log_uses_indirect_client            on
+
+http_access                         allow       localhost
+http_access                         allow       AllowKids AllowKidsTime
+http_access                         allow       cwsnet
+http_access                         deny        all
+
+cache_mem                           2560 MB
+cache_dir                           aufs /var/cache/squid 8704 32 512
+cache deny                          no-cache
+cache_swap_low                      90
+cache_swap_high                     95
+cache_effective_user                squid
+cache_effective_group               squid
+cache_store_log                     daemon:/var/log/squid/store.log
+cache_replacement_policy            heap LFUDA
+#cache_peer                          caspersb-proxy02.caspersbox.com parent 3128 3130 default login=PASSTHRU proxy-only
+
+memory_cache_mode                   always
+memory_replacement_policy           lru
+
+maximum_object_size_in_memory       1 MB
+minimum_object_size                 0 KB
+maximum_object_size                 100 MB
+
+access_log                          daemon:/var/log/squid/access.log squid
+coredump_dir                        /var/spool/squid
+
+quick_abort_min                     -1 QB
+read_ahead_gap                      1 MB
+positive_dns_ttl                    10 minutes
+negative_dns_ttl                    10 seconds
+minimum_expiry_time                 10 minutes
+
+quick_abort_min                     1024 KB
+quick_abort_max                     2048 KB
+quick_abort_pct                     90
+
+#
+# ecap
+#
+ecap_enable                         on
+loadable_modules                    /usr/local/lib/ecap_clamav_adapter.so
+ecap_service                        clamav_service_req reqmod_precache uri=ecap://e-cap.org/ecap/services/clamav?mode=REQMOD bypass=off
+ecap_service                        clamav_service_resp respmod_precache uri=ecap://e-cap.org/ecap/services/clamav?mode=RESPMOD bypass=on
+adaptation_access                   clamav_service_req allow !bypass_scan_types_req all
+adaptation_access                   clamav_service_resp allow !bypass_scan_types_rep all

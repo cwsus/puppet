@@ -1,0 +1,3 @@
+# Set PRELINKING=no per security requirements
+PRELINKING=no
+

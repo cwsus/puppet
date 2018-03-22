@@ -1,0 +1,9 @@
+[Unit]
+Description=Freshclam
+
+[Timer]
+OnCalendar=00/1:45
+Persistent=True
+
+[Install]
+WantedBy=basic.target

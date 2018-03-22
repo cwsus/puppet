@@ -1,0 +1,6 @@
+[Unit]
+Description=AIDE Security Configuration Check
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env aide --check

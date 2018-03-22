@@ -1,0 +1,113 @@
+<% if $isprimary == "true" %>
+include                         "/etc/acl.d/cwsns.acl";
+include                         "/etc/acl.d/cwsdhcp.acl";
+<% else %>
+include                         "/etc/acl.d/master.acl";
+include                         "/etc/acl.d/network.acl";
+<% end %>
+options {
+    <% if $isprimary == "true" %>
+    allow-query                 { "cwsdhcp"; "cwsns"; "cwsad"; };
+    <% else %>
+    allow-query                 { "cwsnet"; "vpnnet"; };
+    <% end %>
+    auth-nxdomain               no;
+    bindkeys-file               "/etc/keys.d/named.iscdlv.key";
+    directory                   "/namedb";
+    dnssec-enable               no;
+    dnssec-validation           no;
+    dnssec-lookaside            auto;
+    dnssec-lookaside            . trust-anchor dlv.isc.org;
+    dump-file                   "/var/run/cache_dump.db";
+    filter-aaaa-on-v4           yes;
+    hostname                    "<%= scope.lookupvar("fqdn") %>";
+    listen-on                   port 53 { <%= scope.lookupvar("ipaddress_eth0") %>; };
+    managed-keys-directory      "/etc/keys.d";
+    session-keyfile             "/run/named/session.key";
+    <% if $isprimary != "true" %>
+    min-refresh-time            3600;
+    max-refresh-time            86400;
+    min-retry-time              600;
+    max-retry-time              86400;
+    <% end %>
+    memstatistics-file          "/var/tmp/memstats.txt";
+    minimal-responses           no;
+    notify                      no;
+    pid-file                    "/var/run/named/named.pid";
+    query-source                <%= scope.lookupvar("ipaddress_eth0") %>;
+    querylog                    yes;
+    session-keyfile             "/var/tmp/session.key";
+    statistics-file             "/var/tmp/stats.txt";
+    <% if $isprimary == "true" %>
+    max-transfer-idle-out       30;
+    max-transfer-time-out       60;
+    transfer-format             many-answers;
+    transfers-out               100;
+    <% else %>
+    max-transfer-idle-in        30;
+    max-transfer-time-in        60;
+    transfers-in                100;
+    transfers-per-ns            10;
+    transfer-source             <%= scope.lookupvar("ipaddress_eth0") %>;
+    <% end %>
+    version                     "0.0";
+    zone-statistics             yes;
+};
+
+# include keys
+<% if $isprimary == "true" %>
+include                         "/etc/keys.d/dhcp-key.key";
+<% end %>
+include                         "/etc/keys.d/xfer-key.key";
+
+#
+# ISC keys
+#
+include                         "/etc/keys.d/named.root.key";
+include                         "/etc/keys.d/named.iscdlv.key";
+
+## include additional conf files
+include                         "/etc/conf.d/logging.conf";
+include                         "/etc/conf.d/controls.conf";
+include                         "/etc/conf.d/transfer.conf";
+
+view "localhost" {
+    match-clients               { "localhost"; };
+    allow-new-zones             no;
+    recursion                   no;
+
+    include                     "/etc/zones.d/named.rfc1912.zones";
+    include                     "/etc/zones.d/caspersbox.zones";
+};
+
+<% if $isprimary == "true" %>
+view "slaves" {
+    match-clients               { "cwsns"; };
+    allow-new-zones             no;
+    recursion                   no;
+
+    include                     "/etc/zones.d/caspersbox.zones";
+};
+<% else %>
+view "cwsnet" {
+    match-clients               { "cwsdmz"; "cwsnet"; };
+    allow-new-zones             yes;
+    allow-recursion             { "cwsdmz"; "cwsnet"; };
+    forward                     first;
+    forwarders                  { 8.8.4.4; 208.67.222.222; 8.8.8.8; 208.67.220.220; };
+    recursion                   yes;
+
+    include                     "/etc/zones.d/caspersbox.zones";
+};
+
+view "vpnnet" {
+    match-clients               { "vpnnet"; };
+    allow-new-zones             no;
+    allow-recursion             { "vpnnet"; };
+    forward                     first;
+    forwarders                  { 8.8.4.4; 208.67.222.222; 8.8.8.8; 208.67.220.220; };
+    recursion                   yes;
+
+    include                     "/etc/zones.d/caspersbox.zones";
+};
+<% end %>

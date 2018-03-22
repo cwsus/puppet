@@ -1,0 +1,61 @@
+#
+# puppet wserver.conf
+#
+
+PidFile                             ${APACHE_RUN_DIR}/puppet.caspersbox.com/httpd.pid
+ServerName                          puppet.caspersox.com
+ServerSignature                     On
+ServerTokens                        Prod
+UseCanonicalName                    On
+HostnameLookups                     Double
+ContentDigest                       On
+FileETag                            MTime Size
+DocumentRoot                        "/var/www/puppet.caspersbox.com/html"
+
+LoadModule                          passenger_module /usr/local/share/gems/gems/passenger-5.0.10/buildout/apache2/mod_passenger.so
+
+<IfModule mod_passenger.c>
+    PassengerRoot                   /usr/local/share/gems/gems/passenger-5.0.10
+    PassengerDefaultRuby            /usr/bin/ruby
+</IfModule>
+
+<Directory />
+    Options                         none
+    AllowOverride                   none
+    Require                         all denied
+</Directory>
+
+<Directory /html>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI -Indexes -MultiViews
+    AllowOverride                   none
+    Require                         all granted
+</Directory>
+
+<Directory /error>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI -Indexes -MultiViews
+    AllowOverride                   none
+    Require                         all granted
+</Directory>
+
+<IfModule headers_module>
+    Header                          add S caspersb-pxesrv01
+</IfModule>
+
+ErrorDocument                       400 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       401 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       403 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       404 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       405 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       500 /error/puppet.caspersbox.com/errHandler.htm
+ErrorDocument                       503 /error/puppet.caspersbox.com/errHandler.htm
+
+Listen                              192.168.10.29:8081
+<VirtualHost 192.168.10.29:8081>
+    RewriteOptions                  inherit
+
+    LogLevel                        error
+    ErrorLog                        "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/puppet.caspersbox.com/error-%Y.%m.%d.log 86400"
+    CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/puppet.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined
+</VirtualHost>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet

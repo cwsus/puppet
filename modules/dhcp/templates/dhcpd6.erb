@@ -1,0 +1,54 @@
+# dhcpd6.conf
+authoritative;
+server-name                         "<%= scope.lookupvar("fqdn") %>";
+server-identifier                   <%= scope.lookupvar("fqdn") %>;
+ddns-domainname                     "<%= scope.lookupvar("ddns_domain") %>";
+ddns-updates                        on;
+ddns-update-style                   interim;
+deny                                client-updates;
+default-lease-time                  1209600;
+do-forward-updates                  true;
+log-facility                        local5;
+max-lease-time                      1209600;
+max-lease-time                      604800;
+pid-file-name                       "/var/run/dhcpd6.pid";
+ping-check                          true;
+ping-timeout                        5;
+update-static-leases                true;
+
+option auto-proxy-config            code 252 = text;
+
+#
+# keys
+#
+key omapi_key {
+     algorithm                      hmac-md5;
+     secret                         <%= scope.lookupvar("omapi_key") %>;
+}
+
+key dhcp-key {
+    algorithm                       hmac-md5;
+    secret                          <%= scope.lookupvar("dhcp_key") %>;
+}
+
+zone 10.168.92.in-addr.arpa {
+    primary                         caspersb-mdns01.caspersbox.com;
+    key                             dhcp-key;
+}
+
+zone dynamic.caspersbox.com {
+    primary                         caspersb-mdns01.caspersbox.com;
+    key                             dhcp-key;
+}
+
+shared-network cwsnet {
+    subnet6 fec1:4a2b::0/64 {
+        option dhcp6.name-servers       fec1:4a2b::6, fec1:4a2b::17;
+        option dhcp6.domain-search      "caspersbox.com network.caspersbox.com";
+
+        range6 fec1:4a2b::20 fec1:4a2b::65;
+    }
+
+    subnet6 fec1:4a2b::1:0:0:0:0/64 {
+    }
+}

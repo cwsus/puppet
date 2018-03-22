@@ -1,0 +1,9 @@
+[Unit]
+Description=YUM weekly update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env yum -y update
+ExecStartPost=/usr/bin/env yum clean all
+ExecStartPost=/usr/bin/env rm -f /var/cache/yum
+ExecStartPost=/sbin/reboot

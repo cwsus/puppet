@@ -1,0 +1,4 @@
+Cmnd_Alias MKRUNDIRS = /bin/mkdir -pv /var/run/httpd, /bin/mkdir -pv /var/lock/httpd, /bin/mkdir -pv /var/cache/httpd, /bin/mkdir -pv /var/www/*/html, /bin/mkdir -pv /var/log/httpd/*,/bin/mkdir -pv /var/run/httpd/*
+Cmnd_Alias CHOWNDIRS = /bin/chown -Rh websrv. /var/www, /bin/chown -Rh websrv. /var/run/httpd, /bin/chown -Rh websrv. /var/lock/httpd, /bin/chown -Rh websrv. /var/cache/httpd, /bin/chown -Rh websrv. /var/log/httpd
+
+websrv        ALL=(root)   NOPASSWD: MKRUNDIRS, CHOWNDIRS

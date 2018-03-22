@@ -1,0 +1,8 @@
+[Unit]
+Description=YUM daily update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env yum --bugfix update-minimal
+ExecStartPost=/usr/bin/env yum clean all
+ExecStartPost=/usr/bin/env rm -f /var/cache/yum

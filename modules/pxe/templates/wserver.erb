@@ -1,0 +1,60 @@
+#
+# pxe wserver.conf
+#
+
+PidFile                             ${APACHE_RUN_DIR}/pxe.caspersbox.com/httpd.pid
+ServerName                          pxe.caspersox.com
+ServerSignature                     On
+ServerTokens                        Prod
+UseCanonicalName                    On
+HostnameLookups                     Double
+ContentDigest                       On
+FileETag                            MTime Size
+DocumentRoot                        "/var/www/pxe.caspersbox.com/html"
+
+<Directory />
+    Options                         none
+    AllowOverride                   none
+    Require                         all denied
+</Directory>
+
+<Directory /pub/>
+    Options                         +FollowSymLinks -SymLinksIfOwnerMatch -ExecCGI +Indexes
+    AllowOverride                   none
+    Require                         all granted
+</Directory>
+
+<Directory /html/pxe/>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI -Indexes
+    AllowOverride                   none
+    Require                         all granted
+</Directory>
+
+<Directory /error/pxe/>
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI -Indexes
+    AllowOverride                   none
+    Require                         all granted
+</Directory>
+
+<IfModule headers_module>
+    Header                          add S <%= scope.lookupvar("fqdn") %>
+</IfModule>
+
+ErrorDocument                       400 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       401 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       403 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       404 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       405 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       500 /error/pxe.caspersbox.com/errHandler.htm
+ErrorDocument                       503 /error/pxe.caspersbox.com/errHandler.htm
+
+Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:8080
+<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:8080>
+    RewriteOptions                  inherit
+
+    LogLevel                        error
+    ErrorLog                        "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/pxe.caspersbox.com/error-%Y.%m.%d.log 86400"
+    CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/pxe.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined
+</VirtualHost>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet

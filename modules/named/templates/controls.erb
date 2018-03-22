@@ -1,0 +1,15 @@
+<% if $ismaster == "true" %>
+include     "/etc/keys.d/$masterserver.key";
+
+controls {
+    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { $masterserver; };
+};
+<% else %>
+include     "/etc/keys.d/$masterserver.key";
+include     "/etc/keys.d/$servername.key";
+
+controls {
+    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { $servername; };
+    inet $ip_addr port 10953 allow { "mdns"; } keys { $masterserver; };
+};
+<% end %>

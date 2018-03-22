@@ -1,0 +1,159 @@
+zone "caspersbox.com" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.caspersbox.com";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.caspersbox.com";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "dynamic.caspersbox.com" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "dynamic/db.dynamic.caspersbox.com";
+    allow-update            { key dhcp-key; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "dynamic/db.dynamic.caspersbox.com";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "ilo.caspersbox.com" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.ilo.caspersbox.com";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.ilo.caspersbox.com";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "mgmt.caspersbox.com" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.mgmt.caspersbox.com";
+    allow-update            { key dhcp-key; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.mgmt.caspersbox.com";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "network.caspersbox.com" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.network.caspersbox.com";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.network.caspersbox.com";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "5.168.192.in-addr.arpa" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.192.168.5.in-addr.arpa";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.192.168.5.in-addr.arpa";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "10.168.192.in-addr.arpa" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "dynamic/db.192.168.10.in-addr.arpa";
+    allow-update            { key dhcp-key; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "dynamic/db.192.168.10.in-addr.arpa";";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "20.168.192.in-addr.arpa" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.192.168.20.in-addr.arpa";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.192.168.20.in-addr.arpa";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "30.168.192.in-addr.arpa" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.192.168.30.in-addr.arpa";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.192.168.30.in-addr.arpa";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};
+
+zone "40.168.192.in-addr.arpa" IN {
+    <% if $ismaster == "true" %>
+    type                    master;
+    file                    "master/db.192.168.40.in-addr.arpa";
+    allow-update            { none; };
+    allow-transfer          { key xfer-key; };
+    <% else %>
+    type                    slave;
+    file                    "slave/db.192.168.40.in-addr.arpa";
+    masters                 { "mdns"; };
+    allow-transfer          { key xfer-key; };
+    allow-notify            { "mdns"; };
+    notify                  no;
+    <% end %>
+};

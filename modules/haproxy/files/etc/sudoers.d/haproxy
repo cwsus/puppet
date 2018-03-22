@@ -1,0 +1,3 @@
+Cmnd_Alias MKRUNDIRS = /bin/mkdir /run/haproxy, /bin/chown haproxy. /run/haproxy
+
+haproxy    ALL=(root)    NOPASSWD: MKRUNDIRS

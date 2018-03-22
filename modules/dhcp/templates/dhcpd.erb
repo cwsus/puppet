@@ -1,0 +1,295 @@
+# dhcpd.conf
+#
+authoritative;
+server-name                         "<%= scope.lookupvar("fqdn") %>";
+server-identifier                   <%= scope.lookupvar("fqdn") %>;
+ddns-domainname                     "<%= scope.lookupvar("ddns_domain") %>";
+ddns-updates                        on;
+ddns-update-style                   interim;
+deny                                client-updates;
+default-lease-time                  1209600;
+do-forward-updates                  true;
+log-facility                        local5;
+max-lease-time                      1209600;
+max-lease-time                      604800;
+pid-file-name                       "/var/run/dhcpd.pid";
+ping-check                          true;
+ping-timeout                        5;
+update-static-leases                true;
+
+option auto-proxy-config            code 252 = text;
+
+<% if $isprimary == "true" %>
+failover peer "failover-partner" {
+    primary;
+    address                         <%= scope.lookupvar("fqdn") %>;
+    port                            519;
+    peer                            address <%= scope.lookupvar("dhcp_secondary") %>;
+    peer                            port 520;
+    max-response-delay              60;
+    max-unacked-updates             10;
+    mclt                            3600;
+    split                           128;
+    load                            balance max seconds 3;
+}
+<% else %>
+failover peer "failover-partner" {
+    secondary;
+    address                         <%= scope.lookupvar("fqdn") %>;
+    port                            520;
+    peer                            address <%= scope.lookupvar("dhcp_primary") %>;
+    peer                            port 519;
+    max-response-delay              60;
+    max-unacked-updates             10;
+    mclt                            3600;
+    split                           128;
+    load                            balance max seconds 3;
+}
+<% endif %>
+
+omapi-port                          7911;
+omapi-key                           omapi_key;
+
+#
+# keys
+#
+key omapi_key {
+     algorithm                      hmac-md5;
+     secret                         <%= scope.lookupvar("omapi_key") %>;
+}
+
+key dhcp-key {
+    algorithm                       hmac-md5;
+    secret                          <%= scope.lookupvar("dhcp_key") %>;
+}
+
+zone 10.168.92.in-addr.arpa {
+    primary                         caspersb-mdns01.caspersbox.com;
+    key                             dhcp-key;
+}
+
+zone dynamic.caspersbox.com {
+    primary                         caspersb-mdns01.caspersbox.com;
+    key                             dhcp-key;
+}
+
+#
+# dmz
+#
+subnet 192.168.5.0 netmask 255.255.255.252 {
+}
+
+#
+# openvpn
+#
+subnet 192.168.6.0 netmask 255.255.255.240 {
+    option routers                  192.168.6.1;
+    option subnet-mask              255.255.255.240;
+    option broadcast-address        192.168.6.15;
+    option domain-name              "vpn.caspersbox.com";
+    option domain-name-servers      192.168.10.105, 192.168.10.106, 192.168.10.107;
+    option domain-search            "caspersbox.com", "network.caspersbox.com";
+    option dhcp-lease-time          604800;
+    option auto-proxy-config        "http://wpad.caspersbox.com/wpad.dat";
+    option ntp-servers              192.168.10.1;
+
+    pool {
+        failover peer               "failover-partner";
+        range                       192.168.6.2 192.168.6.14;
+    }
+}
+
+shared-network cwsnet {
+    #
+    # vlan 10 (default)
+    #
+    subnet 192.168.10.0 netmask 255.255.255.0 {
+        option domain-name              "dynamic.caspersbox.com";
+        option routers                  $defgateway;
+        option subnet-mask              $netmaskaddr;
+        option broadcast-address        $bcastaddr;
+        option domain-name-servers      $dnssvrlst
+        option domain-search            $dnssearch[0], $dnssearch[1]
+        option dhcp-lease-time          604800;
+        option auto-proxy-config        "http://wpad.caspersbox.com/wpad.dat";
+        option ntp-servers              192.168.10.1;
+
+        pool {
+            failover peer               "failover-partner";
+            range                       192.168.10.20 192.168.10.70;
+        }
+    }
+
+    #
+    # network devices
+    #
+    group {
+        option domain-name              "network.caspersbox.com";
+
+        host caspersb-pfsense-wan {
+            option host-name            "caspersb-pfsense-wan";
+            hardware ethernet           00:1e:68:65:94:e0;
+            fixed-address               192.168.1.254;
+        }
+
+        host caspersb-pfsense-lan {
+            option host-name            "caspersb-pfsense-lan";
+            hardware ethernet           00:1e:68:65:94:df;
+            fixed-address               192.168.5.1;
+        }
+
+        host caspersb-cs2811-wan {
+            option host-name            "caspersb-cs2811-wan";
+            hardware ethernet           00:1F:CA:B7:67:C8;
+            fixed-address               192.168.5.2;
+        }
+
+        host caspersb-cs2811-lan {
+            option host-name            "caspersb-cs2811-lan";
+            hardware ethernet           00:1F:CA:B7:67:C9;
+            fixed-address               192.168.10.1;
+        }
+
+        host caspersb-cs3750 {
+            option host-name            "caspersb-cs3750";
+            hardware ethernet           DC:7B:94:5D:15:03;
+            fixed-address               192.168.10.2;
+        }
+
+        host caspersb-en2500 {
+            option host-name            "caspersb-en2500";
+            hardware ethernet           C0:C1:C0:B4:BF:49;
+            fixed-address               192.168.10.3;
+        }
+    }
+
+    #
+    # kids
+    #
+    group {
+    }
+
+    #
+    # game consoles
+    #
+    group {
+    }
+
+    #
+    # servers
+    #
+    group {
+        option domain-name              "caspersbox.com";
+
+        host caspersb-vmware01 {
+            option host-name            "caspersb-vmware01";
+            hardware ethernet           00:23:8b:aa:51:bb; ## vmnic0: 00:23:8b:aa:51:bb, vmnic1: 00:23:8b:aa:51:bc
+            fixed-address               192.168.25.253;
+        }
+
+        host caspersb-vmware02 {
+            option host-name            "caspersb-vmware02";
+            hardware ethernet           00:1e:68:79:0b:fb; ## vmnic0: 00:1e:68:79:0b:fb, vmnic1: 00:1e:68:79:0b:fc
+            fixed-address               192.168.25.254;
+        }
+    }
+
+    #
+    # virtual servers
+    #
+    group {
+        option domain-name              "caspersbox.com";
+
+        host caspersb-haproxy01 {
+            option host-name            "caspersb-haproxy01";
+            hardware ethernet           00:0c:29:8e:4e:45;
+            fixed-address               192.168.30.100;
+        }
+
+        host caspersb-dhcp01 {
+            option host-name            "caspersb-dhcp01";
+            hardware ethernet           00:0c:29:8e:4e:45;
+            fixed-address               192.168.30.101;
+        }
+
+        host caspersb-dhcp02 {
+            option host-name            "caspersb-dhcp02";
+            hardware ethernet           00:0c:29:3e:be:f5;
+            fixed-address               192.168.30.102;
+        }
+
+        host caspersb-mdns01 {
+            option host-name            "caspersb-mdns01";
+            hardware ethernet           00:0c:29:cb:24:4a;
+            fixed-address               192.168.30.103;
+        }
+
+        host caspersb-mdns02 {
+            option host-name            "caspersb-mdns02";
+            hardware ethernet           00:0c:29:a0:d8:2f;
+            fixed-address               192.168.30.104;
+        }
+
+        host caspersb-sdns01 {
+            option host-name            "caspersb-sdns01";
+            hardware ethernet           00:0c:29:d5:e1:cb;
+            fixed-address               192.168.30.105;
+        }
+
+        host caspersb-sdns02 {
+            option host-name            "caspersb-sdns02";
+            hardware ethernet           00:0c:29:f2:84:7a;
+            fixed-address               192.168.30.106;
+        }
+
+        host caspersb-sdns03 {
+            option host-name            "caspersb-sdns03";
+            hardware ethernet           00:0c:29:e5:b3:bb;
+            fixed-address               192.168.30.107;
+        }
+
+        host caspersb-sdns04 {
+            option host-name            "caspersb-sdns04";
+            hardware ethernet           00:0c:29:da:36:4a;
+            fixed-address               192.168.30.108;
+        }
+
+        host caspersb-websrv01 {
+            option host-name            "caspersb-websrv01";
+            hardware ethernet           00:0c:29:28:65:74;
+            fixed-address               192.168.30.109;
+        }
+
+        host caspersb-websrv02 {
+            option host-name            "caspersb-websrv02";
+            hardware ethernet           00:0c:29:42:8e:93;
+            fixed-address               192.168.30.110;
+        }
+
+        host caspersb-proxy01 {
+            option host-name            "caspersb-proxy01";
+            hardware ethernet           00:0c:29:1c:e7:9b;
+            fixed-address               192.168.30.111;
+        }
+
+        host caspersb-proxy02 {
+            option host-name            "caspersb-proxy02";
+            hardware ethernet           00:0c:29:10:de:57;
+            fixed-address               192.168.30.112;
+        }
+    }
+}
+
+#
+# block devices
+#
+class "blocked" {
+    match                           substring (hardware, 1, 6);
+    ignore                          booting;
+}
+
+subclass "blocked" e0:c7:67:1d:3d:86;
+subclass "blocked" e0:0c:7f:35:1b:cb;
+subclass "blocked" 84:2b:2b:b6:ee:cb;
+subclass "blocked" 10:da:43:e5:40:32;
+subclass "blocked" 5c:af:06:96:ef:39;

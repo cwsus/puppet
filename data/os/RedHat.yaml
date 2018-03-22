@@ -1,0 +1,4 @@
+# /etc/puppetlabs/code/environments/production/data/os/RedHat.yaml
+---
+sshservicename: sshd
+
