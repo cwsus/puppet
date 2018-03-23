@@ -1,4 +1,8 @@
-class named::users {
+#
+# named user configuration
+#
+class named::users (
+) {
     user { 'named':
         ensure              => present,
         home                => '/var/named',

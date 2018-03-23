@@ -8,5 +8,10 @@ class profile::named (
     include named::cleanup
     include named::config
     include named::zones
-    include named::service
+
+    service { 'named-chroot':
+        ensure              => 'running',
+        enable              => true,
+        provider            => 'systemd'
+    }
 }

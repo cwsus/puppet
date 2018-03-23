@@ -1,21 +1,11 @@
 <% if $ismaster == "true" %>
-server 192.168.10.110 {
+<% @servers.each do |server| -%>
+server <%= server %>{
     keys                { xfer-key; };
 };
-
-server 192.168.10.111 {
-    keys                { xfer-key; };
-};
-
-server 192.168.10.112 {
-    keys                { xfer-key; };
-};
-
-server 192.168.10.113 {
-    keys                { xfer-key; };
-};
+<% end -%>
 <% else %>
-server 192.168.10.109 {
+server <%= masterserver %> {
     keys                { xfer-key; };
 };
 <% end %>

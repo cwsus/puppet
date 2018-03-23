@@ -1,27 +1,27 @@
-<% if $ismaster == "true" %>
-include                 "/var/named/chroot/etc/keys.d/caspersb-mdns01.key";
-include                 "/var/named/chroot/etc/keys.d/caspersb-sdns01.key";
-include                 "/var/named/chroot/etc/keys.d/caspersb-sdns02.key";
-
-options {
-    default-key         "caspersb-mdns01";
-    default-server      127.0.0.1;
-    default-port        10953;
-};
-
-server 192.168.20.6 {
-    key                 "caspersb-sdns01";
-};
-
-server 192.168.20.7 {
-    key                 "caspersb-sdns02";
-};
-<% else %>
 include                 "/var/named/chroot/etc/keys.d/<%= scope.lookupvar("hostname") %>.key";
+<% if $ismaster == "true" %>
+<% @servers.each do |server| -%>
+include                 "/var/named/chroot/etc/keys.d/<%= server %>.key";
+};
+<% end -%>
 
 options {
     default-key         "<%= scope.lookupvar("hostname") %>";
     default-server      127.0.0.1;
     default-port        10953;
 };
-<% endif %>
+
+<% @servers.each do |name,addr| -%>
+server <%= name %> {
+    key                 <%= name %>.key;
+    addresses           { <%= addr %> port 10953; };
+};
+<% end -%>
+
+<% else %>
+options {
+    default-key         "<%= scope.lookupvar("hostname") %>";
+    default-server      127.0.0.1;
+    default-port        10953;
+};
+<% end %>

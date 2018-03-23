@@ -1,4 +1,8 @@
-class named::zones {
+#
+# named zone files
+#
+class named::zones (
+) {
     file { '/var/named/chroot/etc/namedb/master/db.caspersbox.com':
         ensure              => present,
         owner               => 'named',

@@ -1,4 +1,8 @@
-class named::cleanup {
+#
+# clean up unused/unnecessary files/directories
+#
+class named::cleanup (
+) {
     file { '/etc/named.conf':
         ensure              => absent,
     }

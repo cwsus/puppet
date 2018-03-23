@@ -8,3 +8,16 @@ profile::packages::gateway: 192.168.10.1
 profile::named::config::ismaster: true
 profile::named::config::masterserver: caspersb-mdns01
 profile::named::config::servername: caspersb-mdns01
+
+profile::named::servers:
+  'caspersb-sdns01'::
+    name: 'caspersb-sdns01'
+    ip: '192.168.20.6'
+  'caspersb-sdns02'::
+    name: 'caspersb-sdns02'
+    ip: '192.168.20.7'
+
+profile::named::keys:
+  'dhcp-key'
+  'xfer-key'
+  'rndc-key'

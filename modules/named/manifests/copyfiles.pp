@@ -1,4 +1,8 @@
-class named::copyfiles {
+#
+# copy original files from /etc to /var/named/chroot/
+#
+class named::copyfiles (
+) {
     file { '/var/named/chroot/namedb/named.rfc1912.zones':
         ensure              => present,
         owner               => 'named',

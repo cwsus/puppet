@@ -1,4 +1,11 @@
-class named::config {
+#
+# build configuration
+#
+class named::config (
+    $ismaster = lookup('profile::named::ismaster', {value_type => Boolean, default_value => 'false'})
+    $masterserver = lookup('profile::named::masterserver', {value_type => String, default_value => undef})
+    $servers = lookup('profile::named::servers', {value_type => Hash[String, String], default_value => undef})
+) {
     file { '/var/named/chroot/etc/localtime':
         ensure              => 'link',
         target              => '/etc/localtime',
@@ -70,38 +77,6 @@ class named::config {
         content             => template('named/rndc.erb'),
     }
 
-    file { '/var/named/chroot/etc/keys.d/dhcp-key.key':
-        ensure              => present,
-        owner               => 'named',
-        group               => 'named',
-        mode                => '0640',
-        source              => 'puppet:///modules/named/etc/keys.d/dhcp-key.key',
-    }
-
-    file { '/var/named/chroot/etc/keys.d/rndc-key.key':
-        ensure              => present,
-        owner               => 'named',
-        group               => 'named',
-        mode                => '0640',
-        source              => 'puppet:///modules/named/etc/keys.d/rndc-key.key',
-    }
-
-    file { '/var/named/chroot/etc/keys.d/rndc-remote.key':
-        ensure              => present,
-        owner               => 'named',
-        group               => 'named',
-        mode                => '0640',
-        source              => 'puppet:///modules/named/etc/keys.d/rndc-remote.key',
-    }
-
-    file { '/var/named/chroot/etc/keys.d/xfer-key.key':
-        ensure              => present,
-        owner               => 'named',
-        group               => 'named',
-        mode                => '0640',
-        source              => 'puppet:///modules/named/etc/keys.d/xfer-key.key',
-    }
-
     file { '/var/named/chroot/etc/keys.d/named.iscdlv.key':
         ensure              => present,
         owner               => 'named',
@@ -140,5 +115,22 @@ class named::config {
         group               => 'named',
         mode                => '0644',
         target              => '/var/named/chroot/etc/conf.d/named.conf',
+    }
+
+    #
+    # generate keys here - don't just copy/paste them
+    # and DONT store them in the fucking repo
+    #
+    file { '/usr/local/bin/make-dns-keys.sh':
+        ensure              => present,
+        owner               => 'named',
+        group               => 'named',
+        mode                => '0755',
+        content             => template('named/make-dns-keys.erb'),
+    }
+
+    exec ('make-dns-keys':
+        command             => '/usr/local/bin/make-dns-keys.sh',
+        returns             => '0',
     }
 }

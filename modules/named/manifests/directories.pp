@@ -1,4 +1,8 @@
-class named::directories {
+#
+# named directories
+#
+class named::directories (
+) {
     file { '/var/named':
         ensure              => directory,
         owner               => 'named',
