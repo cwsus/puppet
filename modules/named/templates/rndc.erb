@@ -1,26 +1,26 @@
-include                 "/var/named/chroot/etc/keys.d/<%= scope.lookupvar("hostname") %>.key";
-<% if $ismaster == "true" %>
+include                 "/var/named/chroot/etc/keys.d/<%= @hostname %>.key";
+<% if @ismaster == "true" %>
 <% @servers.each do |server| -%>
-include                 "/var/named/chroot/etc/keys.d/<%= server %>.key";
+include                 "/var/named/chroot/etc/keys.d/<%= @server['id'] %>.key";
 };
 <% end -%>
 
 options {
-    default-key         "<%= scope.lookupvar("hostname") %>";
+    default-key         "<%= @hostname %>";
     default-server      127.0.0.1;
     default-port        10953;
 };
 
-<% @servers.each do |name,addr| -%>
-server <%= name %> {
-    key                 <%= name %>.key;
-    addresses           { <%= addr %> port 10953; };
+<% @servers.each do |server| -%>
+server <%= @server['id'] %> {
+    key                 <%= @server['id'] %>.key;
+    addresses           { <%= @server['address'] %> port 10953; };
 };
 <% end -%>
 
 <% else %>
 options {
-    default-key         "<%= scope.lookupvar("hostname") %>";
+    default-key         "<%= @hostname %>";
     default-server      127.0.0.1;
     default-port        10953;
 };

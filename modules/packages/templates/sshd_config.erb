@@ -3,8 +3,8 @@
 
 #
 # Listener/Protocol
-<% if $ip_addr %>
-ListenAddress                           $ip_addr
+<% if scope.lookupvar("ip_addr") %>
+ListenAddress                           <%= scope.lookupvar("ip_addr") %>
 <% end %>
 Port                                    22
 Protocol                                2

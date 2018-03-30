@@ -1,15 +1,15 @@
-<% if $ismaster == "true" %>
-include     "/etc/keys.d/<%= scope.lookupvar("hostname") %>.key";
+<% if scope.lookupvar("ismaster") == "true" %>
+include     "/etc/keys.d/<%= @hostname %>.key";
 
 controls {
-    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { <%= scope.lookupvar("hostname") %>; };
+    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { <%= @hostname %>; };
 };
 <% else %>
-include     "/etc/keys.d/$masterserver.key";
-include     "/etc/keys.d/<%= scope.lookupvar("hostname") %>.key";
+include     "/etc/keys.d/<%= @masterserver %>.key";
+include     "/etc/keys.d/<%= @hostname %>.key";
 
 controls {
-    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { <%= scope.lookupvar("hostname") %>; };
-    inet $ip_addr port 10953 allow { "mdns"; } keys { $masterserver; };
+    inet 127.0.0.1 port 10953 allow { "localhost"; } keys { <%= @hostname %>; };
+    inet <%= @ipaddress %> port 10953 allow { "mdns"; } keys { <%= @masterserver %>.key; };
 };
 <% end %>

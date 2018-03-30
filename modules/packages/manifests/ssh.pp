@@ -1,5 +1,5 @@
 class packages::ssh (
-    $ip_addr = lookup('profile::packages::ip_addr', {value_type => String, default_value => ''})
+    $ip_addr = lookup({"name" => "profile::packages::ip_addr", value_type => String, default_value => ''})
 ) {
     package { 'openssh':
         ensure              => 'installed',
@@ -38,7 +38,7 @@ class packages::ssh (
         source              => 'puppet:///modules/packages/usr/local/bin/make-ssh-keys.sh',
     }
 
-    file { '/etc/ssh/systemd/system/sshd.service':
+    file { '/etc/systemd/system/sshd.service':
         ensure              => file,
         owner               => 'root',
         group               => 'root',

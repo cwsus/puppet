@@ -1,11 +1,11 @@
-<% if $ismaster == "true" %>
+<% if @ismaster == "true" %>
 <% @servers.each do |server| -%>
-server <%= server %>{
+server <%= @server['id'] %>{
     keys                { xfer-key; };
 };
 <% end -%>
 <% else %>
-server <%= masterserver %> {
+server <%= @masterserver %> {
     keys                { xfer-key; };
 };
 <% end %>

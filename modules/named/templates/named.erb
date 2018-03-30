@@ -1,4 +1,4 @@
-<% if $isprimary == "true" %>
+<% if @ismaster == "true" %>
 include                         "/etc/acl.d/cwsns.acl";
 include                         "/etc/acl.d/cwsdhcp.acl";
 <% else %>
@@ -6,7 +6,7 @@ include                         "/etc/acl.d/master.acl";
 include                         "/etc/acl.d/network.acl";
 <% end %>
 options {
-    <% if $isprimary %>
+    <% if @ismaster %>
     allow-query                 { "cwsdhcp"; "cwsns"; };
     <% else %>
     allow-query                 { "cwsnet"; "vpnnet"; };
@@ -20,10 +20,10 @@ options {
     dnssec-lookaside            . trust-anchor dlv.isc.org;
     dump-file                   "/var/run/cache_dump.db";
     filter-aaaa-on-v4           yes;
-    hostname                    "<= scope.lookupvar("fqdn") %>";
-    listen-on                   port 53 { <%= scope.lookupvar("ipaddress") %>; };
+    hostname                    "<= @fqdn %>";
+    listen-on                   port 53 { <%= @ipaddress %>; };
     managed-keys-directory      "/etc/keys.d";
-    <% if ! $isprimary %>
+    <% if ! @ismaster %>
     min-refresh-time            3600;
     max-refresh-time            86400;
     min-retry-time              600;
@@ -33,11 +33,11 @@ options {
     minimal-responses           no;
     notify                      no;
     pid-file                    "/var/run/named/named.pid";
-    query-source                <%= scope.lookupvar("ipaddress") %>;
+    query-source                <%= @ipaddress %>;
     querylog                    yes;
     session-keyfile             "/var/tmp/session.key";
     statistics-file             "/var/tmp/stats.txt";
-    <% if $isprimary %>
+    <% if @ismaster %>
     max-transfer-idle-out       30;
     max-transfer-time-out       60;
     transfer-format             many-answers;
@@ -47,7 +47,7 @@ options {
     max-transfer-time-in        60;
     transfers-in                100;
     transfers-per-ns            10;
-    transfer-source             <%= scope.lookupvar("ipaddress") %>;
+    transfer-source             <%= @ipaddress %>;
     <% end %>
     version                     "0.0";
     zone-statistics             yes;
@@ -63,7 +63,7 @@ include                         "/etc/conf.d/transfer.conf";
 #
 # keyfiles
 #
-<% if $isprimary %>
+<% if @ismaster %>
 include                         "/etc/keys.d/dhcp-key.key";
 <% end %>
 include                         "/etc/keys.d/xfer-key.key";
@@ -79,7 +79,7 @@ view "localhost" {
     include                     "/etc/zones.d/caspersbox.zones";
 };
 
-<% if $isprimary == "true" %>
+<% if @ismaster == "true" %>
 view "cws" {
     match-clients               { "cwsdhcp"; "cwsns"; };
     allow-new-zones             no;

@@ -1,24 +1,24 @@
 [Match]
-MACAddress=<%= @macaddress %>
+MACAddress=<%= scope.lookupvar("macaddress") %>
 
 [Link]
-MACAddress=<%= @macaddress %>
+MACAddress=<%= scope.lookupvar("macaddress") %>
 MTUBytes=1500
 
-<% if $static == 'true' %>
+<% if scope.lookupvar("static") == true %>
 [Network]
 Description=CWS
 DNS=192.168.20.6 192.168.20.7
 Domains=caspersbox.com network.caspersbox.com
-<% if $vlan %>
-VLAN=$vlan
+<% if scope.lookupvar("vlan") %>
+VLAN=<%= scope.lookupvar("vlan") %>
 <% end %>
 
 [Address]
-Address=<%= scope('ipaddr') %>
+Address=<%= scope.lookupvar("ip_addr") %>
 
 [Route]
-Gateway=<%= scope.('gateway') %>
+Gateway=<%= scope.lookupvar("gateway") %>
 <% else %>
 [Network]
 DHCP=ipv4
