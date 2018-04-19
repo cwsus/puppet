@@ -1,4 +1,4 @@
-<% if scope.lookupvar("ismaster") == "true" %>
+<% if @ismaster == true %>
 include     "/etc/keys.d/<%= @hostname %>.key";
 
 controls {
@@ -13,3 +13,4 @@ controls {
     inet <%= @ipaddress %> port 10953 allow { "mdns"; } keys { <%= @masterserver %>.key; };
 };
 <% end %>
+

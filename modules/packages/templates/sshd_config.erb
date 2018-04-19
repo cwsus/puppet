@@ -3,8 +3,8 @@
 
 #
 # Listener/Protocol
-<% if scope.lookupvar("ip_addr") %>
-ListenAddress                           <%= scope.lookupvar("ip_addr") %>
+<% if @ipaddress %>
+ListenAddress                           <%= @ipaddress %>
 <% end %>
 Port                                    22
 Protocol                                2
@@ -49,7 +49,8 @@ DenyGroups                              root
 #
 # Password and public key authentications.
 #
-PasswordAuthentication                  no
+AuthenticationMethods                   publickey,keyboard-interactive
+PasswordAuthentication                  yes
 PermitEmptyPasswords                    no
 PubkeyAuthentication                    yes
 AuthorizedKeysFile                      .ssh/authorized_keys
@@ -57,9 +58,7 @@ AuthorizedKeysFile                      .ssh/authorized_keys
 #
 # Disable unused authentications mechanisms.
 #
-RSAAuthentication                       no
-RhostsRSAAuthentication                 no
-ChallengeResponseAuthentication         no
+ChallengeResponseAuthentication         yes
 KerberosAuthentication                  no
 GSSAPIAuthentication                    no
 HostbasedAuthentication                 no

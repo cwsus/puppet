@@ -20,19 +20,7 @@ class packages::yum (
         ensure              => 'installed',
     }
 
-    package { 'yum-plugin-filter-data':
-        ensure              => 'installed',
-    }
-
-    package { 'yum-plugin-fs-snapshot':
-        ensure              => 'installed',
-    }
-
     package { 'yum-plugin-keys':
-        ensure              => 'installed',
-    }
-
-    package { 'yum-plugin-list-data':
         ensure              => 'installed',
     }
 

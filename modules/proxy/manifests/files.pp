@@ -1,4 +1,12 @@
 class proxy::files {
+    file { '/etc/hosts.allow':
+        ensure              => file,
+        owner               => 'root',
+        group               => 'root',
+        mode                => '0644',
+        source              => 'puppet:///modules/proxy/etc/hosts.allow',
+    }
+
     file { '/etc/httpd/conf.d/proxy.conf':
         ensure              => present,
         owner               => 'apache',

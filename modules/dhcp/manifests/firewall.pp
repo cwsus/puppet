@@ -1,5 +1,6 @@
-class dhcp::firewall {
-    file { '/usr/local/bin',
+class dhcp::firewall (
+) {
+    file { '/usr/local/bin':
         ensure              => directory,
         owner               => 'root',
         group               => 'root',

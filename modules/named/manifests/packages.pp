@@ -30,3 +30,4 @@ class named::packages (
         notify              => Service['named-chroot'],
     }
 }
+

@@ -1,6 +1,20 @@
+#==============================================================================
 #
-# pxe wserver.conf
+#          FILE:  pxe.caspersbox.com/wserver.conf
+#         USAGE:  N/A
+#   DESCRIPTION:  Default kickstart installation file
 #
+#       OPTIONS:  ---
+#  REQUIREMENTS:  ---
+#          BUGS:  ---
+#         NOTES:  ---
+#        AUTHOR:  Kevin Huntly <kmhuntly@gmail.com>
+#       COMPANY:  CWS NA
+#       VERSION:  1.0
+#       CREATED:  ---
+#      REVISION:  ---
+#
+#==============================================================================
 
 PidFile                             ${APACHE_RUN_DIR}/pxe.caspersbox.com/httpd.pid
 ServerName                          pxe.caspersox.com
@@ -19,7 +33,7 @@ DocumentRoot                        "/var/www/pxe.caspersbox.com/html"
 </Directory>
 
 <Directory /pub/>
-    Options                         +FollowSymLinks -SymLinksIfOwnerMatch -ExecCGI +Indexes
+    Options                         +FollowSymLinks +SymLinksIfOwnerMatch -ExecCGI +Indexes
     AllowOverride                   none
     Require                         all granted
 </Directory>
@@ -37,7 +51,7 @@ DocumentRoot                        "/var/www/pxe.caspersbox.com/html"
 </Directory>
 
 <IfModule headers_module>
-    Header                          add S <%= scope.lookupvar("fqdn") %>
+    Header                          add S <%= @hostname %>
 </IfModule>
 
 ErrorDocument                       400 /error/pxe.caspersbox.com/errHandler.htm
@@ -48,8 +62,8 @@ ErrorDocument                       405 /error/pxe.caspersbox.com/errHandler.htm
 ErrorDocument                       500 /error/pxe.caspersbox.com/errHandler.htm
 ErrorDocument                       503 /error/pxe.caspersbox.com/errHandler.htm
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:8080
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:8080>
+Listen                              <%= @ipaddress %>:8080
+<VirtualHost <%= @ipaddress %>:8080>
     RewriteOptions                  inherit
 
     LogLevel                        error

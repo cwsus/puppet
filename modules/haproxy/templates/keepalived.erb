@@ -1,7 +1,7 @@
 ! Configuration File for keepalived
 
 global_defs {
-    router_id <%= scope.lookupvar("hostname") %>
+    router_id <%= @hostname %>
 
     !notification_email {
     !    webadm@caspersbox.com
@@ -28,7 +28,7 @@ vrrp_instance VI_1 {
     interface eth0
     state MASTER
     virtual_router_id 50
-    priority <%= scope.lookupvar("priority") %>
+    priority <%= @priority %>
 
     virtual_ipaddress {
         192.168.10.200;

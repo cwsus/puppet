@@ -3,7 +3,7 @@
 #
 # base config
 #
-profile::packages::is_dhcp: true
+packages::is_dhcp: true
 
 #
 # named
@@ -38,3 +38,4 @@ profile::named::keys:
 
 classes:
   role::base
+

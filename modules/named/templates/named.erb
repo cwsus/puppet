@@ -20,7 +20,7 @@ options {
     dnssec-lookaside            . trust-anchor dlv.isc.org;
     dump-file                   "/var/run/cache_dump.db";
     filter-aaaa-on-v4           yes;
-    hostname                    "<= @fqdn %>";
+    hostname                    "<%= @fqdn %>";
     listen-on                   port 53 { <%= @ipaddress %>; };
     managed-keys-directory      "/etc/keys.d";
     <% if ! @ismaster %>
@@ -110,3 +110,4 @@ view "vpn" {
     include                     "/etc/zones.d/caspersbox.zones";
 };
 <% end %>
+

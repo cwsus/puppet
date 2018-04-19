@@ -1,0 +1,7 @@
+[Unit]
+Description=CentOS Extras Repository update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env rsync -avSHP --delete mirrors.rit.edu::centos/7/extras/x86_64/ /var/mirrors/centos/7/extras/x86_64
+

@@ -1,11 +1,11 @@
-visible_hostname                    proxy.caspersbox.com
-unique_hostname                     caspersb-proxy01.caspersbox.com
+visible_hostname                    <%= @proxy_hostname %>
+unique_hostname                     <%= @fqdn %>
 dns_v4_first                        on
 
-http_port                           192.168.20.9:3128
+http_port                           <%= @ipaddress %>:3128
 icp_port                            3130
 
-acl                                 cwsnet src 192.168.10.0/27                          # cwsnet
+acl                                 cwsnet src 192.168.10.0/26                          # cwsnet
 acl                                 cwsnet src 192.168.20.0/27                          # cwsnet
 
 # no caching
@@ -84,8 +84,9 @@ cache_effective_user                squid
 cache_effective_group               squid
 cache_store_log                     daemon:/var/log/squid/store.log
 cache_replacement_policy            heap LFUDA
-#cache_peer                          caspersb-proxy02.caspersbox.com parent 3128 3130 default login=PASSTHRU proxy-only
-
+<% if @cachepeer %>
+cache_peer                          %<= @cachepeer %> parent 3128 3130 default login=PASSTHRU proxy-only
+<% end %>
 memory_cache_mode                   always
 memory_replacement_policy           lru
 

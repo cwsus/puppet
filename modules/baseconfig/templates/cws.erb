@@ -52,14 +52,14 @@ speed (string) — The speed of the processors (e.g. “2.0 GHz”).
 
 echo "
 +-------------------------------------------------------------------+
-Welcome to <%= scope.lookupvar("fqdn") %>";
+Welcome to <%= @fqdn %>";
 +-------------------------------------------------------------------+
 +---------------------- System Information -------------------------+
-+ IP Address     : <%= scope.lookupvar("ipaddress_eth0") %>
-+ OS             : <%= scope.lookupvar("operatingsystem") %> / <%= scope.lookupvar("operatingsystemrelease") %>
-+ Kernel version : <%= scope.lookupvar("kernelrelease") %>
-+ CPU            : <%= scope.lookupvar("processorcount") %> / <%= scope.lookupvar("processor0") %>
-+ Memory         : <%= scope.lookupvar("memorysize_mb") %> MB
++ IP Address     : <%= @ipaddress %>
++ OS             : <%= @operatingsystem %> / <%= @operatingsystemrelease %>
++ Kernel version : <%= @kernelrelease %>
++ CPU            : <%= @processorcount %> / <%= @processor0 %>
++ Memory         : <%= @memorysize_mb %> MB
 +-------------------------------------------------------------------+
 
 This is a server owned and operated by CaspersBox Web Services.

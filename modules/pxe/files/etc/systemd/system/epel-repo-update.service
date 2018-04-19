@@ -1,0 +1,7 @@
+[Unit]
+Description=EPEL Repository update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env rsync -avSHP --delete mirrors.rit.edu::epel/7/x86_64/ /var/mirrors/epel/7/x86_64
+

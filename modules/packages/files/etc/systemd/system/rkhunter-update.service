@@ -3,4 +3,4 @@ Description=RKHunter update
 
 [Service]
 Type=oneshot
-ExecStart=/bin/rkhunter --propupd
+ExecStart=/bin/rkhunter --propupd --update

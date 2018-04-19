@@ -1,5 +1,5 @@
 zone "caspersbox.com" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.caspersbox.com";
     allow-update            { none; };
@@ -15,7 +15,7 @@ zone "caspersbox.com" IN {
 };
 
 zone "dynamic.caspersbox.com" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "dynamic/db.dynamic.caspersbox.com";
     allow-update            { key dhcp-key; };
@@ -31,7 +31,7 @@ zone "dynamic.caspersbox.com" IN {
 };
 
 zone "ilo.caspersbox.com" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.ilo.caspersbox.com";
     allow-update            { none; };
@@ -47,7 +47,7 @@ zone "ilo.caspersbox.com" IN {
 };
 
 zone "mgmt.caspersbox.com" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.mgmt.caspersbox.com";
     allow-update            { key dhcp-key; };
@@ -63,7 +63,7 @@ zone "mgmt.caspersbox.com" IN {
 };
 
 zone "network.caspersbox.com" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.network.caspersbox.com";
     allow-update            { none; };
@@ -79,7 +79,7 @@ zone "network.caspersbox.com" IN {
 };
 
 zone "5.168.192.in-addr.arpa" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.192.168.5.in-addr.arpa";
     allow-update            { none; };
@@ -95,7 +95,7 @@ zone "5.168.192.in-addr.arpa" IN {
 };
 
 zone "10.168.192.in-addr.arpa" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "dynamic/db.192.168.10.in-addr.arpa";
     allow-update            { key dhcp-key; };
@@ -111,7 +111,7 @@ zone "10.168.192.in-addr.arpa" IN {
 };
 
 zone "20.168.192.in-addr.arpa" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.192.168.20.in-addr.arpa";
     allow-update            { none; };
@@ -127,7 +127,7 @@ zone "20.168.192.in-addr.arpa" IN {
 };
 
 zone "30.168.192.in-addr.arpa" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.192.168.30.in-addr.arpa";
     allow-update            { none; };
@@ -143,7 +143,7 @@ zone "30.168.192.in-addr.arpa" IN {
 };
 
 zone "40.168.192.in-addr.arpa" IN {
-    <% if @ismaster == true %>
+    <% if @ismaster == "true" %>
     type                    master;
     file                    "master/db.192.168.40.in-addr.arpa";
     allow-update            { none; };
@@ -157,3 +157,4 @@ zone "40.168.192.in-addr.arpa" IN {
     notify                  no;
     <% end %>
 };
+

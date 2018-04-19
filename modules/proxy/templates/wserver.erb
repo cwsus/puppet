@@ -46,7 +46,7 @@ DocumentRoot                        "/var/www/proxy.caspersbox.com/html"
 </Directory>
 
 <IfModule headers_module>
-    Header                          add S <%= scope.lookupvar("fqdn") %>
+    Header                          add S <%= @fqdn %>
 </IfModule>
 
 ErrorDocument                       400 /error/proxy.caspersbox.com/errHandler.htm
@@ -57,8 +57,8 @@ ErrorDocument                       405 /error/proxy.caspersbox.com/errHandler.h
 ErrorDocument                       500 /error/proxy.caspersbox.com/errHandler.htm
 ErrorDocument                       503 /error/proxy.caspersbox.com/errHandler.htm
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:8080
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:8080>
+Listen                              <%= @ipaddress %>:8080
+<VirtualHost <%= @ipaddress %>:8080>
     LogLevel                        error
     ErrorLog                        "|/usr/sbin/rotatelogs ${APACHE_LOG_ROOT}/proxy.caspersbox.com/error-%Y.%m.%d.log 86400"
     CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_ROOT}/proxy.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined

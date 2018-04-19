@@ -1,1 +1,1 @@
-SUBSYSTEM=="net", ATTR{address}=="<%= scope.lookupvar("macaddress_eth0") %>", NAME="ens160", DRIVERS=="?*"
+SUBSYSTEM=="net", ATTR{address}=="<%= @macaddress %>", NAME="<%= @interfaces[0] %>", DRIVERS=="?*"

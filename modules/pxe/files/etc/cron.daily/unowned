@@ -1,0 +1,17 @@
+#!/bin/bash
+
+find / -ignore_readdir_race \
+    -not -path "/var/mirrors/*" \
+    -not -path "/var/www/*" \
+    -not -path "/var/run/httpd/*" \
+    -not -path "/var/cache/httpd/*" \
+    -not -path "/etc/httpd/*" \
+    -nouser -print -exec chown root {} \;
+
+find / -ignore_readdir_race \
+    -not -path "/var/mirrors/*" \
+    -not -path "/var/www/*" \
+    -not -path "/var/run/httpd/*" \
+    -not -path "/var/cache/httpd/*" \
+    -not -path "/etc/httpd/*" \
+    -nogroup -print -exec chgrp root {} \;

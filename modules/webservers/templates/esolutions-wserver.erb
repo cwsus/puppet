@@ -59,7 +59,7 @@ Include                             conf/esolutions.caspersbox.com/tomcat.conf
 </Location>
 
 <IfModule headers_module>
-    Header                          add S <%= scope.lookupvar("fqdn") %>
+    Header                          add S <%= @hostname %>
 </IfModule>
 
 ErrorDocument                       400 /error/esolutions.caspersbox.com/errHandler.htm
@@ -70,8 +70,8 @@ ErrorDocument                       405 /error/esolutions.caspersbox.com/errHand
 ErrorDocument                       500 /error/esolutions.caspersbox.com/errHandler.htm
 ErrorDocument                       503 /error/esolutions.caspersbox.com/errHandler.htm
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:10981
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:10981>
+Listen                              <%= @ipaddress %>:10981
+<VirtualHost <%= @ipaddress %>:10981>
     RewriteOptions                  inherit
 
     Include                         conf/esolutions.caspersbox.com/redirects.conf
@@ -82,8 +82,8 @@ Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:109
     CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/esolutions.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined
 </VirtualHost>
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:10944
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:10944>
+Listen                              <%= @ipaddress %>:10944
+<VirtualHost <%= @ipaddress %>:10944>
     SSLEngine                       On
     SSLCertificateFile              ssl.d/crt/esolutions.crt
     SSLCertificateKeyFile           ssl.d/key/esolutions.key

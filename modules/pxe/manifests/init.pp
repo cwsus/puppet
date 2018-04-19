@@ -1,7 +1,6 @@
-class pxe {
-    include pxe::directories
-    include pxe::files
-    include pxe::tcpwrappers
-    include pxe::systemctl
+class pxe (
+) {
+    include pxe::accounting
+    include pxe::config
     include pxe::systemd
 }

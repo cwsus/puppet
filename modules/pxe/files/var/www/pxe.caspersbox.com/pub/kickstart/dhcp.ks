@@ -1,3 +1,38 @@
+#==============================================================================
+#
+#          FILE:  default.ks
+#         USAGE:  N/A
+#   DESCRIPTION:  Default kickstart installation file
+#
+#       OPTIONS:  ---
+#  REQUIREMENTS:  ---
+#          BUGS:  ---
+#         NOTES:  ---
+#        AUTHOR:  Kevin Huntly <kmhuntly@gmail.com>
+#       COMPANY:  CWS NA
+#       VERSION:  1.0
+#       CREATED:  ---
+#      REVISION:  ---
+#
+#==============================================================================
+#==============================================================================
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#==============================================================================
+
 #version=DEVEL
 #
 # System authorization information
@@ -111,12 +146,11 @@ volgroup centos --pesize=4096 pv.01
 #
 logvol /              --fstype="ext4"  --size=4096 --vgname=centos --name=lv_root      --label=lv_root      --mkfsoptions="-m 1"
 logvol /home          --fstype="ext4"  --size=100  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
-logvol /tmp           --fstype="ext4"  --size=512  --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
+logvol /tmp           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var       --label=lv_var       --mkfsoptions="-m 1" --fsoptions="rw,nosuid"
 logvol /var/cache     --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-cache --label=lv_var-cache --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var/log       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-log   --label=lv_var-log   --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var/log/audit --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-audit --label=lv_var-audit --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
-logvol /var/tmp       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-tmp   --label=lv_var-tmp   --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var/lib/dhcpd --fstype="ext4"  --size=256  --vgname=centos --name=lv_var-dhcpd --label=lv_var-dhcpd --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol swap           --fstype="swap"  --size=3072 --vgname=centos --name=lv_swap      --label=lv_swap                           --fsoptions="swap"
 
@@ -187,7 +221,7 @@ psacct
 yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
-dhcpd
+tcpdump
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -206,6 +240,40 @@ dhcpd
 -postfix
 -tuned
 -wpa_supplicant
+-compiz
+-emacs-leim
+-emacspeak
+-ethereal
+-ethereal-gnome
+-gnome-games
+-isdn4k-utils
+-nmap
+-octave
+-oprofile
+-rcs
+-valgrind
+-zsh
+-fxload
+-libndp
+-lsscsi
+-lzo
+-mariadb-libs
+-python-configobj
+-python-linux-procfs
+-python-perf
+-python-pyudev
+-python-schedutils
+-snappy
+-teamd
+-virt-what
+-jansson
+-libdaemon
+-libteam
+-libnl3-cli
+-libnl3
+-libsysfs
+-yum-plugin-filter-data
+-yum-plugin-list-data
 %end
 
 %addon org_fedora_oscap
@@ -236,7 +304,7 @@ echo "nameserver 192.168.20.7" >> /etc/resolv.conf
 # add entries to fstab
 #
 echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
-echo "/tmp          /var/tmp      none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
+echo "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
 echo "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0" >> /etc/fstab
 echo "proc          /proc         proc    rw,hidepid=2                     0 0" >> /etc/fstab
 
@@ -280,7 +348,6 @@ echo "%sudoers    ALL=(ALL:ALL)   NOPASSWD: ALL" > /etc/sudoers.d/sudoers
 # maybe we can yum update?
 #
 /bin/yum -y install epel-release
-/bin/yum -y update
 
 #
 # if the above works then this should too...
@@ -290,6 +357,35 @@ echo "%sudoers    ALL=(ALL:ALL)   NOPASSWD: ALL" > /etc/sudoers.d/sudoers
     clamav-update pam_yubico yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves \
     yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf
 
+#
+# puppetize me
+#
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
+
+#
+# package install
+#
+/bin/yum -y install https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+
+#
+# update yum repos...
+#
+/bin/yum -y update
+
+#
+# ... and install puppetserver
+/bin/yum -y install puppet
+
+#
+# run puppet
+#
+/bin/puppet agent apply
+
+#
+# enable the service
+#
+/bin/systemctl enable puppet
 #
 # updates for clam/rkhunter
 #

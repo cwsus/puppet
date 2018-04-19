@@ -1,8 +1,8 @@
-class webservers {
+class webservers (
+) {
     include webservers::packages
-    include webservers::groups
-    include webservers::accounts
-    include webservers::files
+    include webservers::accounting
+    include webservers::config
 
     service { 'httpd':
         hasrestart          => true,

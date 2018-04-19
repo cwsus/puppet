@@ -41,7 +41,7 @@ do
 
     [ -f ${KEYS_DIR}/${KEYNAME}.key ] && continue;
 
-    /usr/bin/env dnssec-keygen -a "${KEYALGO}" -b "${KEYBITS}" -n HOST -r /dev/urandom ${KEYNAME});
+    /usr/bin/env dnssec-keygen -a "${KEYALGO}" -b "${KEYBITS}" -n HOST -r /dev/urandom ${KEYNAME};
     typeset -i RET_CODE=${?};
 
     [ ! -z "${ENABLE_DEBUG}" -a "${ENABLE_DEBUG}" = "${_TRUE}" ] && writeLogEntry "DEBUG" "${METHOD_NAME}" "${0}" "${LINENO}" "ENTRY -> ${ENTRY}";
@@ -85,4 +85,5 @@ done
 
 ## and return
 exit ${ERROR_COUNT};
+
 

@@ -100,6 +100,10 @@ class packages::system (
         ensure              => 'installed',
     }
 
+    package { 'tmux':
+        ensure              => 'installed',
+    }
+
     package { 'logwatch':
         ensure              => 'installed',
     }

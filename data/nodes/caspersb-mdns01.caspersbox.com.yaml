@@ -6,5 +6,9 @@ profile::packages::gateway: 192.168.10.1
 
 # named variables
 profile::named::config::ismaster: true
-profile::named::config::masterserver: caspersb-mdns01
 profile::named::config::servername: caspersb-mdns01
+
+classes:
+  role::named
+  profile::named
+

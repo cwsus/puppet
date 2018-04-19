@@ -64,7 +64,7 @@ Include                             conf/esolutions/tomcat-config.conf
 </Location>
 
 <IfModule headers_module>
-    Header                          add S <%= scope.lookupvar("fqdn") %>
+    Header                          add S <%= @hostname %>
 </IfModule>
 
 ErrorDocument                       400 /error/eSolutions/errHandler.htm
@@ -75,8 +75,8 @@ ErrorDocument                       405 /error/eSolutions/errHandler.htm
 ErrorDocument                       500 /error/eSolutions/errHandler.htm
 ErrorDocument                       503 /error/eSolutions/errHandler.htm
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:10981
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:10981>
+Listen                              <%= @ipaddress %>:10981
+<VirtualHost <%= @ipaddress %>:10981>
     RewriteOptions                  inherit
 
     Include                         conf/esolutions/redirects.conf
@@ -87,8 +87,8 @@ Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:109
     CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_ROOT}/esolutions/access-%Y.%m.%d.log 86400" vhost_combined
 </VirtualHost>
 
-Listen                              <%= scope.lookupvar("ipaddress_eth0") %>:10944
-<VirtualHost <%= scope.lookupvar("ipaddress_eth0") %>:10944>
+Listen                              <%= @ipaddress %>:10944
+<VirtualHost <%= @ipaddress %>:10944>
     SSLEngine                       On
     SSLProtocol                     ALL -SSLv2 -SSLv3
     SSLCipherSuite                  EDH+CAMELLIA:EDH+aRSA:EECDH+aRSA+AESGCM:EECDH+aRSA+SHA384:EECDH+aRSA+SHA256:EECDH:+CAMELLIA256:+AES256:+CAMELLIA128:+AES128:+SSLv3:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!DSS:!RC4:!SEED:!IDEA:!ECDSA:kEDH:CAMELLIA256-SHA:AES256-SHA:CAMELLIA128-SHA:AES128-SHA

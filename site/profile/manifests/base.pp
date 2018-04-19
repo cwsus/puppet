@@ -8,7 +8,6 @@ class profile::base {
     include packages::chrony
     include packages::clamav
     include packages::cron
-    include packages::pam
     include packages::puppet
     include packages::rkhunter
     include packages::ssh
@@ -20,9 +19,13 @@ class profile::base {
     include packages::vim
     include packages::yum
     include packages::psacct
+    include baseconfig::accounting
     include baseconfig::audisp
     include baseconfig::files
+    include baseconfig::login
     include baseconfig::modprobe
+    include baseconfig::pam
+    include baseconfig::profile
     include baseconfig::security
     include baseconfig::shutdown
     include baseconfig::sysconfig

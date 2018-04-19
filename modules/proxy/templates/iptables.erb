@@ -2,7 +2,7 @@
 ## SERVER FIREWALL
 
 NETWORK_ADDR="192.168.10.0/24";
-PRIMARY_INT="<%= scope.lookupvar("ipaddress_eth0") %>";
+PRIMARY_INT="<%= @ipaddress %>";
 set -A PROXYSERVERS "192.168.10.107" "192.168.10.108";
 set -A DNSSERVERS "192.168.10.110" "192.168.10.111" "192.168.10.112" "192.168.10.113";
 
