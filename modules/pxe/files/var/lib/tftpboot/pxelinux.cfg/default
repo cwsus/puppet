@@ -1,7 +1,6 @@
-DEFAULT menu.c32
 MENU TITLE CWS PXE
 PROMPT 0
-TIMEOUT 30
+TIMEOUT 300
 ONTIMEOUT local
 
 LABEL local
@@ -10,29 +9,29 @@ LABEL local
 
 LABEL CentOS 7.1 x86_64 (Default)
     MENU LABEL CentOS 7 x86_64 Default Kickstart
-    KERNEL images/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
-    APPEND initrd=images/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:10981/kickstart/default.ks
+    KERNEL bootimg/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
+    APPEND initrd=bootimg/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:8080/pub/kickstart/default.ks
     ipappend=2
 
 LABEL CentOS 7.1 x86_64 (DNS Server)
-    MENU LABEL CentOS 7 x86_64 Default DNS Server Kickstart
-    KERNEL images/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
-    APPEND initrd=images/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:10981/kickstart/named.ks
+    MENU LABEL CentOS 7 x86_64 DNS Server Kickstart
+    KERNEL bootimg/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
+    APPEND initrd=bootimg/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:8080/pub/kickstart/named.ks
     ipappend=2
 
 LABEL CentOS 7.1 x86_64 (Proxy Server)
-    MENU LABEL CentOS 7 x86_64 Default Proxy Server Kickstart
-    KERNEL images/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
-    APPEND initrd=images/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:10981/kickstart/proxy.ks
+    MENU LABEL CentOS 7 x86_64 Proxy Server Kickstart
+    KERNEL bootimg/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
+    APPEND initrd=bootimg/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:8080/pub/kickstart/proxy.ks
     ipappend=2
 
 LABEL CentOS 7.1 x86_64 (DHCP Server)
-    MENU LABEL CentOS 7 x86_64 Default DHCP Server Kickstart
-    KERNEL images/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
-    APPEND initrd=images/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:10981/kickstart/dhcp.ks
+    MENU LABEL CentOS 7 x86_64 DHCP Server Kickstart
+    KERNEL bootimg/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
+    APPEND initrd=bootimg/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:8080/pub/kickstart/dhcp.ks
     ipappend=2
 
 LABEL CentOS 7.1 x86_64 (Web Server)
-        MENU LABEL CentOS 7 x86_64 Web Server Kickstart
-        KERNEL images/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
-        APPEND initrd=images/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=ftp://pxe.caspersbox.com/pub/kickstart/webserver.ks
+    MENU LABEL CentOS 7 x86_64 Web Server Kickstart
+    KERNEL bootimg/centos/7/x86_64/images/pxeboot/vmlinuz ksdevice=bootif
+    APPEND initrd=bootimg/centos/7/x86_64/images/pxeboot/initrd.img inst.ks=http://pxe.caspersbox.com:8080/pub/kickstart/webserver.ks

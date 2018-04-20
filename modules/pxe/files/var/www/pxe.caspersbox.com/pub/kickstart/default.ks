@@ -221,6 +221,7 @@ yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
+tmux
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*

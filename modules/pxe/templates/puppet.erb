@@ -53,8 +53,8 @@ ErrorDocument                       405 /error/puppet.caspersbox.com/errHandler.
 ErrorDocument                       500 /error/puppet.caspersbox.com/errHandler.htm
 ErrorDocument                       503 /error/puppet.caspersbox.com/errHandler.htm
 
-Listen                              192.168.10.29:8081
-<VirtualHost 192.168.10.29:8081>
+Listen                              <%= ipaddress %>:8081
+<VirtualHost <%= ipaddress %>:8081>
     RewriteOptions                  inherit
 
     DocumentRoot                    /usr/share/puppet/rack/puppetmasterd/public/
@@ -69,8 +69,8 @@ Listen                              192.168.10.29:8081
     CustomLog                       "|/usr/sbin/rotatelogs ${APACHE_LOG_DIR}/puppet.caspersbox.com/access-%Y.%m.%d.log 86400" vhost_combined
 </VirtualHost>
 
-Listen                              192.168.10.29:8180
-<VirtualHost 192.168.10.29:8180>
+Listen                              <%= ipaddress %>:8180
+<VirtualHost <%= ipaddress %>:8180>
     RewriteOptions                  inherit
     SSLEngine                       On
 

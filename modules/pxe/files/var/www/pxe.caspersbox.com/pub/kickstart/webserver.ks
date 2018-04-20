@@ -83,7 +83,7 @@ lang en_US.UTF-8
 # Network information
 #
 network --device=bootif --bootproto=dhcp --ethtool="autoneg on lro off" --noipv6 --activate --onboot=yes
-network --hostname=localhost.localdomain
+network --hostname=localhost.localdomain --device=bootif
 
 #
 # disable firewall/selinux
@@ -224,6 +224,7 @@ yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
+tmux
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
