@@ -59,7 +59,7 @@ group --name=sshusers --gid=5001
 
 #
 # Create sysadm user
-# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$1$<SALT>")' | python -
+# generate password with python -c 'import crypt; print(crypt.crypt("<PASSWORD>", "$6$<SALT>"))'
 # replace <SALT> with an 8 char salt
 #
 user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=$1$rlhvUTMe$ZIZ7REyMAXe4Q41gIFYX5. --iscrypted
