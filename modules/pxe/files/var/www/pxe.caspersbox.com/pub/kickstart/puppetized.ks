@@ -221,6 +221,8 @@ yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
+tmux
+openssl
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -273,6 +275,11 @@ tcpdump
 -libsysfs
 -yum-plugin-filter-data
 -yum-plugin-list-data
+-libusbx
+-libyubikey
+-pam_yubico
+-ykclient
+-ykpers
 %end
 
 %addon org_fedora_oscap
@@ -293,70 +300,15 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 # Start of the %post section with logging into /root/ks-post.log
 %post --log=/root/ks-post.log
 
-#==============================================================================
 #
-# Add your nameservers here
+# get the postinstall script
 #
-#==============================================================================
-echo "nameserver 192.168.20.6" > /etc/resolv.conf
-echo "nameserver 192.168.20.7" >> /etc/resolv.conf
+/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
 
 #
-# add entries to fstab
+# run
 #
-printf "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0\n" >> /etc/fstab
-printf "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0\n" >> /etc/fstab
-printf "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0\n" >> /etc/fstab
-printf "proc          /proc         proc    rw,hidepid=2                     0 0\n" >> /etc/fstab
-
-#==============================================================================
-#
-# Add EPEL Repository and update
-#
-#==============================================================================
-/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
-/bin/yum -y install epel-release
-/bin/yum -y update
-
-#
-# if the above works then this should too...
-#
-/bin/yum -y install puppet
-
-#==============================================================================
-#
-# Download current puppet configuration
-#
-#==============================================================================
-/bin/curl -O /var/tmp/puppet-current.tar.gz http://pxe.caspersbox.com:8080/pub/puppet/puppet-current.tar.gz
-/bin/gunzip /var/tmp/puppet-current.tar.gz
-/bin/tar xf /var/tmp/puppet-current.tar -C /
-
-#==============================================================================
-#
-# Install/apply puppet!
-#
-#==============================================================================
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-/bin/yum -y install https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-/bin/yum -y install puppet
-
-#
-# run puppet
-#
-/bin/puppet agent apply
-/bin/systemctl enable puppet
-/bin/systemctl enable start
-
-
-
-#==============================================================================
-#
-# PUPPETIZE ME BABY
-#
-#==============================================================================
-
+/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
 
 # End of the %post section
 %end

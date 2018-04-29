@@ -190,6 +190,8 @@ yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
+tmux
+openssl
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -242,6 +244,11 @@ tcpdump
 -libsysfs
 -yum-plugin-filter-data
 -yum-plugin-list-data
+-libusbx
+-libyubikey
+-pam_yubico
+-ykclient
+-ykpers
 %end
 
 %addon org_fedora_oscap
@@ -263,141 +270,18 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# nameservers - i think we need them
+# get the postinstall script
 #
-echo "nameserver 192.168.20.6" > /etc/resolv.conf
-echo "nameserver 192.168.20.7" >> /etc/resolv.conf
+/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
 
 #
-# add entries to fstab
+# run
 #
-echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
-echo "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
-echo "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0" >> /etc/fstab
-echo "proc          /proc         proc    rw,hidepid=2                     0 0" >> /etc/fstab
+/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
 
 #
-# systemctl
+# install puppet server
 #
-/bin/systemctl mask ctrl-alt-del
-/bin/systemctl set-default multi-user.target
-/bin/systemctl enable psacct
-/bin/systemctl enable chronyd
-/bin/systemctl enable sysstat
-/bin/systemctl enable auditd
-/bin/systemctl enable httpd
-/bin/systemctl disable kdump
-/bin/systemctl disable tuned
-/bin/systemctl mask kdump
-/bin/systemctl mask tuned
-
-#
-# put sudoers in
-#
-echo "%sudoers    ALL=(ALL:ALL)   NOPASSWD: ALL" > /etc/sudoers.d/sudoers
-
-#
-# put websrv sudoers in
-#
-echo "Cmnd_Alias MKRUNDIRS = /bin/mkdir -pv /var/run/httpd, /bin/mkdir -pv /var/lock/httpd, /bin/mkdir -pv /var/cache/httpd, /bin/mkdir -pv /var/www/*/html, /bin/mkdir -pv /var/log/httpd/*,/bin/mkdir -pv /var/run/httpd/*" > /etc/sudoers.d/websrv
-echo "Cmnd_Alias CHOWNDIRS = /bin/chown -Rh websrv. /var/www, /bin/chown -Rh websrv. /var/run/httpd, /bin/chown -Rh websrv. /var/lock/httpd, /bin/chown -Rh websrv. /var/cache/httpd, /bin/chown -Rh websrv. /var/log/httpd" >> /etc/sudoers.d/websrv
-echo "" >> /etc/sudoers.d/websrv
-echo "websrv    ALL=(root)    NOPASSWD: MKRUNDIRS, CHOWNDIRS" >> /etc/sudoers.d/websrv
-
-#
-# remove user groups
-#
-/sbin/usermod -g users -G sshusers,sudoers sysadm
-/sbin/usermod -g webgrp -G sudoers websrv
-/sbin/usermod -g webgrp -G sudoers webadm
-/sbin/groupdel sysadm
-/sbin/groupdel webadm
-/sbin/groupdel websrv
-
-#
-# nologin for websrv
-#
-/sbin/usermod -s /sbin/nologin websrv
-
-#
-# import epel key
-#
-/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
-/bin/rpmkeys --import https://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import https://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-
-#
-# maybe we can yum update?
-#
-/bin/yum -y install epel-release
-
-#
-# if the above works then this should too...
-#
-/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data \
-    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
-    clamav-update pam_yubico yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves \
-    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf
-
-#
-# puppetize me
-#
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-
-#
-# package install
-#
-/bin/yum -y install https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-
-#
-# update yum repos...
-#
-/bin/yum -y update
-
-#
-# ... and install puppetserver
 /bin/yum -y install puppetserver
-
-#
-# update jvm memconfig
-#
-/bin/sed -ibak -e "s/JAVA_ARGS=.*/JAVA_ARGS=\"-Xms2g -Xmx2g\"/g" /etc/sysconfig/puppetserver
-
-#
-# gems
-#
-/bin/gem install json_pure
-/bin/gem install rubygems-update
-/usr/local/bin/update_rubygems
-
-#
-# enable the service
-#
-/bin/systemctl enable puppetserver
-
-#
-# updates for clam/rkhunter
-#
-/bin/rkhunter --propupdate --update
-/bin/freshclam -v
-
-#
-# aide init
-#
-/usr/sbin/aide --init
-/bin/cp /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-/usr/sbin/aide --check
-
-# End of the %post section
-%end
-
-%post --nochroot --log=/root/ks-post-nochroot.log
-
-#
-# prelinking
-#
-/bin/sed -i "s/PRELINKING=.*/PRELINKING=no/g" /etc/sysconfig/prelink
-/sbin/prelink -ua
 
 %end

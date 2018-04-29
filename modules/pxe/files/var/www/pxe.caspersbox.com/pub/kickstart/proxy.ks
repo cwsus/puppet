@@ -222,6 +222,8 @@ yum-utils
 yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
+tmux
+openssl
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -274,6 +276,11 @@ tcpdump
 -libsysfs
 -yum-plugin-filter-data
 -yum-plugin-list-data
+-libusbx
+-libyubikey
+-pam_yubico
+-ykclient
+-ykpers
 %end
 
 %addon org_fedora_oscap
@@ -295,121 +302,32 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# nameservers - i think we need them
+# proxy, install software
 #
-echo "nameserver 192.168.20.6" > /etc/resolv.conf
-echo "nameserver 192.168.20.7" >> /etc/resolv.conf
+/bin/yum -y install squid squidGuard
 
 #
-# add entries to fstab
+# install blacklists HERE
 #
-echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
-echo "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
-echo "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0" >> /etc/fstab
-echo "proc          /proc         proc    rw,hidepid=2                     0 0" >> /etc/fstab
+/bin/wget -o /var/tmp/shallalist.tar.gz http://www.shallalist.de/Downloads/shallalist.tar.gz
+/bin/tar xf /var/tmp/shallalist.tar.gz
+/bin/mkdir -pv /usr/local/squidGuard/db
+/bin/cp -Rp /var/tmp/BL/* /usr/local/squidGuard/db
+/bin/chown -Rh proxyadm. /usr/local/squidGuard
 
 #
-# systemctl
+# and compile
 #
-/bin/systemctl mask ctrl-alt-del
-/bin/systemctl set-default multi-user.target
-/bin/systemctl enable psacct
-/bin/systemctl enable chronyd
-/bin/systemctl enable sysstat
-/bin/systemctl enable auditd
-/bin/systemctl enable dhcpd
-/bin/systemctl disable kdump
-/bin/systemctl disable tuned
-/bin/systemctl mask kdump
-/bin/systemctl mask tuned
+/usr/sbin/squidGuard -c /etc/squid/squidGuard.conf -C all
 
 #
-# put sudoers in
+# get the postinstall script
 #
-echo "%sudoers    ALL=(ALL:ALL)   NOPASSWD: ALL" > /etc/sudoers.d/sudoers
+/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
 
 #
-# remove user groups
+# run
 #
-/sbin/usermod -g users -G sshusers,sudoers sysadm
-/sbin/groupdel sysadm
-
-#
-# nologin for websrv
-#
-/sbin/usermod -s /sbin/nologin dhcpd
-
-#
-# import epel key
-#
-/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
-
-#
-# maybe we can yum update?
-#
-/bin/yum -y install epel-release
-/bin/yum -y update
-
-#
-# if the above works then this should too...
-#
-/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data \
-    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
-    clamav-update pam_yubico yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves \
-    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf
-
-#
-# puppetize me
-#
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-
-#
-# package install
-#
-/bin/yum -y install https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-
-#
-# update yum repos...
-#
-/bin/yum -y update
-
-#
-# ... and install puppetserver
-/bin/yum -y install puppet
-
-#
-# run puppet
-#
-/bin/puppet agent apply
-
-#
-# enable the service
-#
-/bin/systemctl enable puppet
-
-#
-# updates for clam/rkhunter
-#
-/bin/rkhunter --propupdate --update
-/bin/freshclam -v
-
-#
-# aide init
-#
-/usr/sbin/aide --init
-/bin/cp /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-/usr/sbin/aide --check
-
-# End of the %post section
-%end
-
-%post --nochroot --log=/root/ks-post-nochroot.log
-
-#
-# prelinking
-#
-/bin/sed -i "s/PRELINKING=.*/PRELINKING=no/g" /etc/sysconfig/prelink
-/sbin/prelink -ua
+/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
 
 %end

@@ -61,7 +61,6 @@ group --name=dhcpd    --gid=4000
 #
 # Create sysadm user
 # generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$1$<SALT>")' | python -
-# replace <SALT> with an 8 char salt
 #
 user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=$1$m0cpZEHU$dnqdo9b6Gzw7dZ.s7vu.h/ --iscrypted
 user --uid=4000 --groups=dhcpd                  --name=dhcpd  --password=$1$Po3moNwk$DkuBDN5KS9XkxJCBeTSmE1 --iscrypted
@@ -228,7 +227,7 @@ yum-plugin-fastestmirror
 yum-plugin-verify
 tcpdump
 tmux
-dhcpd
+openssl
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -306,143 +305,24 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 # Start of the %post section with logging into /root/ks-post.log
 %post --log=/root/ks-post.log
 
-#==============================================================================
 #
-# BASE HARDENING
+# dhcp server, install software
 #
-#==============================================================================
-#
-# add entries to fstab
-#
-echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
-echo "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
-echo "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0" >> /etc/fstab
-echo "proc          /proc         proc    rw,hidepid=2                     0 0" >> /etc/fstab
+/bin/yum -y install dhcp
 
 #
-# get our baseconfig here
+# we should get our base dhcp config here
 #
-/bin/wget -O /var/tmp/baseconfig.tar.gz http://pxe.caspersbox.com/priv/baseconfig.tar.gz
-/bin/wget -O /var/tmp/sshd_config http://pxe.caspersbox.com/priv/etc/ssh/sshd_config
-/bin/wget -O /var/tmp/network http://pxe.caspersbox.com/priv/etc/sysconfig/network
-/bin/wget -O /var/tmp/dhcpd.conf http://pxe.caspersbox.com/priv/etc/dhcp/dhcpd.conf
 
 #
-# place it
+# get the postinstall script
 #
-cd /
-/bin/gunzip /var/tmp/baseconfig.tar.gz
-/bin/tar -xf /var/tmp/baseconfig.tar
-
-/bin/mv /var/tmp/sshd_config /etc/ssh/sshd_config
-/bin/mv /var/tmp/network /etc/sysconfig/network
-/bin/mv /var/tmp/dhcpd.conf /etc/dhcp/dhcpd.conf
+/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
 
 #
-# cleanup
+# run
 #
-/bin/rm -f /var/tmp/baseconfig.tar.gz
-/bin/rm -f /etc/baseconfig.tar
-/bin/rm -f /var/tmp/sshd_config
-/bin/rm -f /var/tmp/network
-/bin/rm -f /var/tmp/dhcpd.conf
-
-#
-# services
-#
-/bin/systemctl enable aide.timer
-/bin/systemctl enable freshclam.timer
-/bin/systemctl enable puppet-agent.timer
-/bin/systemctl enable rkhunter-update.timer
-/bin/systemctl enable sshd.service
-/bin/systemctl enable yum-daily-update.timer
-/bin/systemctl enable yum-weekly-update.timer
-
-#
-# disable usb support and add audit
-#
-CURRENT_GRUB_CMDLINE="$(/bin/grep GRUB_CMDLINE_LINUX /etc/default/grub)"
-NEW_GRUB_CMDLINE="$(echo ${CURRENT_GRUB_CMDLINE} | /bin/sed -e "s/\"$/ nousb audit=1\"/g")"
-/bin/sed -ie "s/${CURRENT_GRUB_CMDLINE}/${NEW_GRUB_CMDLINE}/" /etc/default/grub
-
-/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
-
-#
-# remove default "sysadm" group
-#
-/sbin/usermod -g users -G sshusers,sudoers sysadm
-/sbin/groupdel sysadm
-
-#
-# import epel/puppet keys
-#
-/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-
-#
-# maybe we can yum update?
-#
-/bin/yum -y install epel-release https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-
-#
-# update yum repos...
-#
-/bin/yum -y update
-
-#
-# if the above works then this should too...
-#
-/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data \
-    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
-    clamav-update pam_yubico yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves \
-    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf puppet
-
-#
-# run puppet
-#
-/bin/puppet agent apply
-
-#
-# enable the service
-#
-/bin/systemctl enable puppet
-
-#
-# remove unused users
-#
-/sbin/userdel shutdown
-/sbin/userdel halt
-/sbin/userdel games
-/sbin/userdel operator
-/sbin/userdel ftp
-/sbin/userdel news
-/sbin/userdel gopher
-
-#
-# remove unused groups
-#
-/sbin/groupdel games
-
-#
-# permissions
-#
-chmod 640 /etc/syslog.conf /etc/security/access.conf /etc/crontab /etc/sysctl.conf
-chmod -R 750 /var/log/audit /usr/share/logwatch/scripts/logwatch.pl /var/crash /etc/skel
-chown -R root. /var/crash
-
-#
-# updates for clam/rkhunter
-#
-/bin/rkhunter --propupdate --update
-/bin/freshclam -v
-
-#
-# aide init
-#
-/usr/sbin/aide --init
-/bin/cp /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
-/usr/sbin/aide --check
+/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
 
 # End of the %post section
 %end

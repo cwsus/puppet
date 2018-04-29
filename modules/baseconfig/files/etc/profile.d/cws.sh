@@ -72,5 +72,16 @@ OR USE WILL BE PROSECUTED TO THE FULL EXTENT OF LAW.
 [ ! -z "${SYSTEM_PROCESS_COUNT}" ] && unset -v SYSTEM_PROCESS_COUNT;
 [ ! -z "${USER_PROCESS_COUNT}" ] && unset -v USER_PROCESS_COUNT;
 
+#
+# dont allow cancel
+#
+trap '' 1 2 3
+[ ! -f ${HOME}/.google_authenticator ] && /usr/bin/env google-authenticator;
+
+#
+# re-enable
+#
+trap 1 2 3
+
 [ ! -z "${ENABLE_VERBOSE}" ] && [ "${ENABLE_VERBOSE}" = "true" ] && set +x;
 [ ! -z "${ENABLE_TRACE}" ] && [ "${ENABLE_TRACE}" = "true" ] && set +v;
