@@ -44,7 +44,7 @@ auth --enableshadow --passalgo=sha512
 #
 text
 install
-url --url http://192.168.10.29:8080/pub/centos/7/os/x86_64
+url --url http://pxe.caspersbox.com:8080/pub/centos/7/os/x86_64
 
 #
 # Run the Setup Agent on first boot
@@ -55,15 +55,15 @@ firstboot --disable
 # standard groups
 #
 group --name=sudoers  --gid=5000
-group --name=sshusers --gid=5001
-group --name dnsgrp   --gid=5002
+group --name=sshusers --gid=6000
+group --name dnsgrp   --gid=4000
 
 #
 # Create sysadm user
 #
-user --uid=5000 --groups=wheel,sudoers,sshusers --name=sysadm --password=$6$y3ThUPaNQ/Gjx0hQ$YC7ffb3kTAPMGGK4mE0sLuhFMfrKtWCu9dczT.PuvdCJ.Y830nggxNdhxg02.jLZGLK4h6HZ1sWXAri.l5q2O.  --iscrypted
-user --uid=5002 --groups=dnsgrp                 --name=dnsadm --password=$6$5e23zVh5jtzKtxbL$AC7v3IFC4QpmgMd27xHicQ.P692SDl/lMUFIBg.ZdVnFXQg/t3wJu/zx2q8jcw6bcYtewbc2KRux5PTID4gGe0 --iscrypted
-user --uid=5003 --groups=dnsgrp                 --name=dnssrv --password=$6$cMtwmyXmdI5bn3a1$217Q1rvQCjRWyG7K79NrPRn2hzriToBEMTNkcSkKNiniKbDuC6hqRuZQakGwY3AVEUEflrbbYNFieDxUjwbnE  --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
+user --uid=4000 --groups=dnsgrp                 --name=dnsadm --password=$6$5e23zVh5jtzKtxbL$AC7v3IFC4QpmgMd27xHicQ.P692SDl/lMUFIBg.ZdVnFXQg/t3wJu/zx2q8jcw6bcYtewbc2KRux5PTID4gGe0 --iscrypted
+user --uid=4001 --groups=dnsgrp                 --name=dnssrv --password=$6$cMtwmyXmdI5bn3a1$217Q1rvQCjRWyG7K79NrPRn2hzriToBEMTNkcSkKNiniKbDuC6hqRuZQakGwY3AVEUEflrbbYNFieDxUjwbnE  --iscrypted
 
 #
 # reboot after install
@@ -188,13 +188,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -227,6 +224,9 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -305,23 +305,23 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# install named
-#
-/bin/yum -y install named-chroot
-
-#
-# get base named config here
-#
-
-#
-#
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh
 
 #
 # run
 #
-/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
+/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
 
+#
+# we are a dns server, install named
+#
+/bin/yum -y install named-chroot
+
+#
+# get the config
+#
+
+# End of the %post section
 %end

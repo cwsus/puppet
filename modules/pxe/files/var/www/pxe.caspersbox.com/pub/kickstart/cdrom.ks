@@ -55,13 +55,13 @@ firstboot --disable
 # standard groups
 #
 group --name=sudoers  --gid=5000
-group --name=sshusers --gid=5001
+group --name=sshusers --gid=6000
 
 #
 # Create sysadm user
 # generate password with python -c 'import crypt; print(crypt.crypt("<password>", "$6$<salt>"))'
 #
-user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=<password> --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
 
 #
 # reboot after install
@@ -186,13 +186,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -225,6 +222,9 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -305,12 +305,12 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 #
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh
 
 #
 # run
 #
-/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
+/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
 
 # End of the %post section
 %end

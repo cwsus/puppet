@@ -34,17 +34,27 @@
 #
 #==============================================================================
 
-#==============================================================================
-# CHANGE THESE VARS
-#==============================================================================
-typeset NETDEV=ens160
+#
+# install type here!!
+#
+typeset INSTALL_TYPE="${1}";
 typeset HOSTNAME=localhost.localdomain
+typeset INSTALLTYPE=$(/bin/grep installtype /proc/cmdline | /bin/cut -d "=" -f 2);
+typeset INSTALLCONF=$(/bin/grep installconf /proc/cmdline | /bin/cut -d "=" -f 2);
+typeset HOSTNAME=$(/bin/grep hostname /proc/cmdline | /bin/cut -d "=" -f 2);
+typeset VLAN=$(/bin/grep hostname /proc/cmdline | /bin/cut -d "=" -f 2);
+typeset NWINFO=$(/bin/grep hostname /proc/cmdline | /bin/cut -d "=" -f 2);
+
+
+typeset NETDEV=$(/bin/ip addr | /bin/grep "2:" | /bin/awk -F ":" '{print $2}' | /bin/sed -e "s/^ //g"
+
 typeset VLANNAME=vlan20
 typeset VLANID=20
 typeset MACADDR=$(/sbin/ip addr show dev ${NETDEV} | /bin/grep ether | /bin/awk '{print $2}');
 typeset IPADDR=
-typeset NETMASK=/27
+typeset NETMASK=27
 typeset GATEWAY=192.168.20.1
+
 
 [ -z "${NETDEV}" ] && exit 1;
 [ -z "${HOSTNAME}" -o "${HOSTNAME}" == "localhost.localdomain" ] && exit 1;
@@ -62,6 +72,32 @@ echo "nameserver 192.168.20.6" > /etc/resolv.conf
 echo "nameserver 192.168.20.7" >> /etc/resolv.conf
 
 #
+# import epel/puppet keys
+#
+/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
+/bin/rpmkeys --import https://duo.com/RPM-GPG-KEY-DUO
+
+#
+# maybe we can yum update?
+#
+/bin/yum -y install epel-release https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+
+#
+# update yum repos...
+#
+/bin/yum -y update
+
+#
+# if the above works then this should too...
+#
+/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data \
+    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
+    clamav-update yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves duo_unix \
+    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf puppet google-authenticator
+
+#
 # add entries to fstab
 #
 echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
@@ -77,7 +113,7 @@ mkdir -pv /etc/systemd/network
 #
 # get our baseconfig here
 #
-/bin/wget -O /var/tmp/baseconfig.tar.gz http://pxe.caspersbox.com/priv/baseconfig.tar.gz
+/bin/wget -O /var/tmp/baseconfig.tar.gz http://pxe.caspersbox.com:8080/priv/baseconfig.tar.gz
 
 #
 # extract
@@ -89,9 +125,9 @@ mkdir -pv /etc/systemd/network
 #
 # update cfg
 #
-/bin/sed -e "s^@macaddress^${MACADDR}^g" -e "s^@vlan^${VLANID}^g" \
+/bin/sed -e "s^@macaddress^${MACADDR}^g" -e "s^@name^${NETDEV}^g" -e "s^@vlan^${VLANID}^g" \
     -e "s^@ipaddr^${IPADDR}^g" -e "s^@netmask^${NETMASK}^g" \
-    -e "s^@gateway^${GATEWAY}^g" /etc/systemd/network/network.network > /etc/systemd/network/${netdev}.network;
+    -e "s^@gateway^${GATEWAY}^g" /etc/systemd/network/network.network > /etc/systemd/network/${NETDEV}.network;
 /bin/rm -f /etc/systemd/network/network.network;
 
 /bin/sed -e "s^@vlanname^${VLANNAME}^g" -e "s^@vlanid^${VLANID}^g" \
@@ -120,9 +156,11 @@ mkdir -pv /etc/systemd/network
 /bin/systemctl enable freshclam.timer
 /bin/systemctl enable puppet-agent.timer
 /bin/systemctl enable rkhunter-update.timer
-/bin/systemctl enable sshd.service
 /bin/systemctl enable yum-daily-update.timer
 /bin/systemctl enable yum-weekly-update.timer
+/bin/systemctl enable sshd.service
+/bin/systemctl enable systemd-networkd.service
+/bin/systemctl enable systemd-resolved.service
 
 #
 # masking
@@ -149,31 +187,6 @@ typeset NEW_GRUB_CMDLINE="$(echo ${CURRENT_GRUB_CMDLINE} | /bin/sed -e "s/\"$/ n
 #
 /sbin/usermod -g users -G sshusers,sudoers sysadm
 /sbin/groupdel sysadm
-
-#
-# import epel/puppet keys
-#
-/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
-/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
-
-#
-# maybe we can yum update?
-#
-/bin/yum -y install epel-release https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-
-#
-# update yum repos...
-#
-/bin/yum -y update
-
-#
-# if the above works then this should too...
-#
-/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data \
-    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
-    clamav-update pam_yubico yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves \
-    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf puppet google-authenticator
 
 #
 # run puppet
@@ -226,3 +239,25 @@ typeset NEW_GRUB_CMDLINE="$(echo ${CURRENT_GRUB_CMDLINE} | /bin/sed -e "s/\"$/ n
 #
 /bin/sed -i "s/PRELINKING=.*/PRELINKING=no/g" /etc/sysconfig/prelink
 /sbin/prelink -ua
+
+#
+# specials based on install type
+#
+case "${INSTALL_TYPE}" in
+    [Ww][Ee][Bb]|[Ww][Ee][Bb][Ss][Ee][Rr][Vv][Ee][Rr])
+        /bin/yum -y install httpd httpd-tools apr apr-util mod_ssl php python;
+        /bin/wget -O /var/tmp/dhcp-config.tar.gz http://pxe.caspersbox.com:8080/priv/dhcp-config.tar.gz;
+        ;;
+    [Dd][Hh][Cc][Pp])
+        /bin/yum -y install dhcp;
+        /bin/wget -O /var/tmp/dhcp-config.tar.gz http://pxe.caspersbox.com:8080/priv/dhcp-config.tar.gz;
+        ;;
+    [Dd][Nn][Ss])
+        /bin/yum -y install named-chroot;
+        /bin/wget -O /var/tmp/named-config.tar.gz http://pxe.caspersbox.com:8080/priv/named-config.tar.gz;
+        ;;
+    *)
+        echo "No install type provided!!";
+        ;;
+esac
+

@@ -44,7 +44,7 @@ auth --enableshadow --passalgo=sha512
 #
 text
 install
-url --url http://pxe.caspersbox.com/pub/centos/7/os/x86_64
+url --url http://pxe.caspersbox.com:8080/pub/centos/7/os/x86_64
 
 #
 # Run the Setup Agent on first boot
@@ -55,13 +55,13 @@ firstboot --disable
 # standard groups
 #
 group --name=sudoers  --gid=5000
-group --name=sshusers --gid=5001
+group --name=sshusers --gid=6000
 
 #
 # Create sysadm user
-# generate password with python -c 'import crypt; print(crypt.crypt("<password>", "$6$<salt>"))'
+# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$0iPmPXaknOpgo8yL")' | python -
 #
-user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=<password> --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
 
 #
 # reboot after install
@@ -106,9 +106,9 @@ services --enabled="chronyd"
 
 #
 # root password
-# generate password with python -c 'import crypt; print(crypt.crypt("<password>", "$6$<salt>"))'
+# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$<16 CHAR SALT>")' | python -
 #
-rootpw --iscrypted <password>
+rootpw --iscrypted $6$TwgN1Uwij0eGVxrY$kjt47czCB6K8PXsG7rC.VgQoMD6CkHiME2oi6N4rDXF6h0fGqPb2JSUDsrFe.fRso/FBhO6BdMrAKNlc2bYOO0
 
 #
 # System timezone
@@ -147,7 +147,8 @@ volgroup centos --pesize=4096 pv.01
 # logical volumes
 #
 logvol /              --fstype="ext4"  --size=4096 --vgname=centos --name=lv_root      --label=lv_root      --mkfsoptions="-m 1"
-logvol /home          --fstype="ext4"  --size=100  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
+logvol /home          --fstype="ext4"  --size=512  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
+logvol /opt/cws       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_opt-cws   --label=lv_opt-cws   --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /tmp           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var       --label=lv_var       --mkfsoptions="-m 1" --fsoptions="rw,nosuid"
 logvol /var/cache     --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-cache --label=lv_var-cache --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
@@ -186,13 +187,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -225,6 +223,15 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
+pam-devel
+gcc-c++
+net-tools
+policycoreutils-python
+checkpolicy
+bzip2
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -302,15 +309,18 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 # Start of the %post section with logging into /root/ks-post.log
 %post --log=/root/ks-post.log
 
+typeset INSTALLTYPE=$(/bin/grep installtype /proc/cmdline | /bin/cut -d "=" -f 2);
+typeset INSTALLCONF=$(/bin/grep installconf /proc/cmdline | /bin/cut -d "=" -f 2);
 #
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh ${INSTALLTYPE} ${INSTALLCONF}
+/bin/wget -O /var/tmp/postinstall-base.conf http://pxe.caspersbox.com:8080/priv/${INSTALLCONF}
 
 #
 # run
 #
-/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
+/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
 
 # End of the %post section
 %end

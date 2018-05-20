@@ -4,4 +4,3 @@ Description=CentOS Base Repository update
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/env rsync -avSHP --delete mirrors.rit.edu::centos/7/os/x86_64/ /var/mirrors/centos/7/os/x86_64
-

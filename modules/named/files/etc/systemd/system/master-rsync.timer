@@ -1,0 +1,9 @@
+[Unit]
+Description=rsync master DNS data
+
+[Timer]
+OnUnitActiveSec=1hours
+Persistent=True
+
+[Install]
+WantedBy=basic.target

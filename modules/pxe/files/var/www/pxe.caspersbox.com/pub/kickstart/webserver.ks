@@ -44,7 +44,7 @@ auth --enableshadow --passalgo=sha512
 #
 text
 install
-url --url http://192.168.10.29:8080/pub/centos/7/os/x86_64
+url --url http://pxe.caspersbox.com:8080/pub/centos/7/os/x86_64
 
 #
 # Run the Setup Agent on first boot
@@ -54,15 +54,17 @@ firstboot --disable
 #
 # standard groups
 #
+group --name=webgrp   --gid=4000
 group --name=sudoers  --gid=5000
-group --name=sshusers --gid=5001
-group --name=webgrp   --gid=5002
+group --name=sshusers --gid=6000
+
 #
 # Create sysadm user
+# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$0iPmPXaknOpgo8yL")' | python -
 #
-user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$eSnDwhGh5iI0gNDe$Y7r1BIQU0/BBI58IU4MS9fOrC6x1JEr6yIF6mpBm4MCS8TX8Rlpr0L48QJeZ3dpe1XO8rVcVW4FnpRGHJl1HV. --iscrypted
-user --uid=5001 --groups=webgrp,sudoers         --name=webadm --password=$6$22FKFzdcQ928crV1$6JHoI38XUk7Yaq8pJMv1rDsVW9W1V3hWyNXelROQ3U1b3bsyP4Ap0BMR9rcA1TKrirEqSvN7Wo.HPci0KtyS70 --iscrypted
-user --uid=5002 --groups=webgrp,sudoers         --name=websrv --password=$6$1syGXvDD0OhrLAiQ$y0lpuOXCnFNpz1xh6QAfUUHKtZSjmdQNSO8JGvCgfu6xLFjBLK1clANBzqy0GuGmYTm.Awby4SV17BfSTM8dz/ --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
+user --uid=4001 --groups=webgrp,sudoers         --name=webadm --password=$6$22FKFzdcQ928crV1$6JHoI38XUk7Yaq8pJMv1rDsVW9W1V3hWyNXelROQ3U1b3bsyP4Ap0BMR9rcA1TKrirEqSvN7Wo.HPci0KtyS70 --iscrypted
+user --uid=4002 --groups=webgrp,sudoers         --name=websrv --password=$6$1syGXvDD0OhrLAiQ$y0lpuOXCnFNpz1xh6QAfUUHKtZSjmdQNSO8JGvCgfu6xLFjBLK1clANBzqy0GuGmYTm.Awby4SV17BfSTM8dz/ --iscrypted
 
 #
 # reboot after install
@@ -187,13 +189,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -226,6 +225,9 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -304,22 +306,19 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# we are a webserver, install
-#
-/bin/yum -y install httpd httpd-tools apr apr-util mod_ssl
-
-#
-# get base httpd config here
-#
-
-#
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall.sh http://pxe.caspersbox.com/priv/postinstall.sh
 
 #
 # run
 #
 /bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
 
+#
+# we are a webserver, install httpd
+#
+/bin/yum -y install httpd httpd-tools apr apr-util mod_ssl
+
+# End of the %post section
 %end

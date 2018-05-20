@@ -44,7 +44,7 @@ auth --enableshadow --passalgo=sha512
 #
 text
 install
-url --url http://192.168.10.29:8080/pub/centos/7/os/x86_64
+url --url http://pxe.caspersbox.com:8080/pub/centos/7/os/x86_64
 
 #
 # Run the Setup Agent on first boot
@@ -55,13 +55,15 @@ firstboot --disable
 # standard groups
 #
 group --name=sudoers  --gid=5000
-group --name proxygrp --gid=5001
+group --name=sshusers --gid=6000
+group --name proxygrp --gid=4000
+
 #
 # Create sysadm user
 #
 user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm   --password=$6$eSnDwhGh5iI0gNDe$Y7r1BIQU0/BBI58IU4MS9fOrC6x1JEr6yIF6mpBm4MCS8TX8Rlpr0L48QJeZ3dpe1XO8rVcVW4FnpRGHJl1HV. --iscrypted
-user --uid=5001 --groups=proxygrp               --name=proxysrv --password=$6$ZH2GlxmxqcOrdkhf$Y0FeKwXNKQH.IkTdMG9r0gTfMT0S07T5sgPo5omdGPUFwVa4fZ/ykX.CofAld4DuqTCOH9CyMY543UxNUoc06/ --iscrypted
-user --uid=5001 --groups=proxygrp               --name=proxyadm --password=$6$ZH2GlxmxqcOrdkhf$Y0FeKwXNKQH.IkTdMG9r0gTfMT0S07T5sgPo5omdGPUFwVa4fZ/ykX.CofAld4DuqTCOH9CyMY543UxNUoc06/ --iscrypted
+user --uid=4000 --groups=proxygrp               --name=proxysrv --password=$6$ZH2GlxmxqcOrdkhf$Y0FeKwXNKQH.IkTdMG9r0gTfMT0S07T5sgPo5omdGPUFwVa4fZ/ykX.CofAld4DuqTCOH9CyMY543UxNUoc06/ --iscrypted
+user --uid=4001 --groups=proxygrp               --name=proxyadm --password=$6$ZH2GlxmxqcOrdkhf$Y0FeKwXNKQH.IkTdMG9r0gTfMT0S07T5sgPo5omdGPUFwVa4fZ/ykX.CofAld4DuqTCOH9CyMY543UxNUoc06/ --iscrypted
 
 #
 # reboot after install
@@ -185,13 +187,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -224,6 +223,9 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -302,32 +304,33 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# proxy, install software
-#
-/bin/yum -y install squid squidGuard
-
-#
-# install blacklists HERE
-#
-/bin/wget -o /var/tmp/shallalist.tar.gz http://www.shallalist.de/Downloads/shallalist.tar.gz
-/bin/tar xf /var/tmp/shallalist.tar.gz
-/bin/mkdir -pv /usr/local/squidGuard/db
-/bin/cp -Rp /var/tmp/BL/* /usr/local/squidGuard/db
-/bin/chown -Rh proxyadm. /usr/local/squidGuard
-
-#
-# and compile
-#
-/usr/sbin/squidGuard -c /etc/squid/squidGuard.conf -C all
-
-#
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh
 
 #
 # run
 #
-/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
+/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
 
+#
+# we are a proxy, install httpd
+#
+/bin/yum -y install squid squidGuard
+
+#
+# proxy cfg
+#
+/bin/wget -O /var/tmp/postinstall-proxy.sh http://pxe.caspersbox.com:8080/priv/postinstall-proxy.sh
+
+#
+# blacklists
+#
+cd /var/tmp
+/bin/wget -O /var/tmp/shallalist.tar.gz http://www.shallalist.de/Downloads/shallalist.tar.gz
+/bin/tar/ xf shallalist.tar.gz
+/bin/mv /var/tmp/BL/* /usr/local/squidGuard/db
+/bin/chown -Rh proxyadm. /usr/local/squidGuard
+
+# End of the %post section
 %end

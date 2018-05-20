@@ -1,4 +1,4 @@
-<%# /etc/puppetlabs/puppet/modules/motd/templates/motd.erb %>
+#<%# /etc/puppetlabs/puppet/modules/motd/templates/motd.erb %>
 #==============================================================================
 #
 #          FILE:  /etc/profile.d/cws.sh
@@ -48,7 +48,7 @@ Welcome to $(hostname)
 +-------------------------------------------------------------------+
 +---------------------- System Information -------------------------+
 + IP Address     : $(/usr/bin/env ip addr | /usr/bin/env grep inet | /usr/bin/env grep -v "127.0.0.1" | /usr/bin/env head -1 | /usr/bin/env awk '{print $2}')
-+ OS             : $(/usr/bin/env cat /etc/redhat-release | awk '{print $1 " " $2)') / /usr/bin/env cat /etc/redhat-release | awk '{print $4)')
++ OS             : $(/usr/bin/env cat /etc/redhat-release | awk '{print $1 " " $2}') / $(/usr/bin/env cat /etc/redhat-release | awk '{print $4}')
 + Kernel version : $(/usr/bin/env uname -r) / $(/usr/bin/env uname -v)
 + CPU            : $(/usr/bin/env cat /proc/cpuinfo | /usr/bin/env grep processor | /usr/bin/env wc -l) / $(/usr/bin/env cat /proc/cpuinfo | /usr/bin/env grep "model name" | /usr/bin/env head -1 | /usr/bin/env awk -F ":" '{print $2}' | /usr/bin/env sed -e "s/^ //g")
 + Memory         : $(/usr/bin/env echo "scale=2; $(/usr/bin/env free | /usr/bin/env grep Mem | /usr/bin/env awk '{print $2}') / 1024 / 1024" | /usr/bin/env bc) MB
@@ -71,17 +71,6 @@ OR USE WILL BE PROSECUTED TO THE FULL EXTENT OF LAW.
 [ ! -z "${USER_DISK_USAGE}" ] && unset -v USER_DISK_USAGE;
 [ ! -z "${SYSTEM_PROCESS_COUNT}" ] && unset -v SYSTEM_PROCESS_COUNT;
 [ ! -z "${USER_PROCESS_COUNT}" ] && unset -v USER_PROCESS_COUNT;
-
-#
-# dont allow cancel
-#
-trap '' 1 2 3
-[ ! -f ${HOME}/.google_authenticator ] && /usr/bin/env google-authenticator;
-
-#
-# re-enable
-#
-trap 1 2 3
 
 [ ! -z "${ENABLE_VERBOSE}" ] && [ "${ENABLE_VERBOSE}" = "true" ] && set +x;
 [ ! -z "${ENABLE_TRACE}" ] && [ "${ENABLE_TRACE}" = "true" ] && set +v;

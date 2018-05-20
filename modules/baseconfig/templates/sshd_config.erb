@@ -3,9 +3,6 @@
 
 #
 # Listener/Protocol
-<% if @ipaddress %>
-ListenAddress                           <%= @ipaddress %>
-<% end %>
 Port                                    22
 Protocol                                2
 
@@ -50,6 +47,7 @@ DenyGroups                              root
 # Password and public key authentications.
 #
 AuthenticationMethods                   publickey,keyboard-interactive
+ChallengeResponseAuthentication         yes
 PasswordAuthentication                  yes
 PermitEmptyPasswords                    no
 PubkeyAuthentication                    yes
@@ -58,7 +56,6 @@ AuthorizedKeysFile                      .ssh/authorized_keys
 #
 # Disable unused authentications mechanisms.
 #
-ChallengeResponseAuthentication         yes
 KerberosAuthentication                  no
 GSSAPIAuthentication                    no
 HostbasedAuthentication                 no

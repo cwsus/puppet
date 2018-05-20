@@ -1,11 +1,11 @@
 class baseconfig::pam (
 ) {
-    file { '/etc/pam.d/local-auth':
+    file { '/etc/pam.d/sshd':
         ensure              => present,
         owner               => 'root',
         group               => 'root',
         mode                => '0644',
-        source              => 'puppet:///modules/packages/etc/pam.d/local-auth',
+        source              => 'puppet:///modules/packages/etc/pam.d/sshd',
     }
 
     file { '/etc/pam.d/system-auth-ac':

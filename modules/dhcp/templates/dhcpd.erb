@@ -46,20 +46,20 @@ failover peer "failover-partner" {
 }
 
 key omapi_key {
-     algorithm                      hmac-md5;
-     secret                         <%= @omapi_key %>;
+    algorithm                       <%@ keyalgo %>;
+    secret                          <%= @omapi_key %>;
 }
-
+<% endif %>
 omapi-port                          7911;
 omapi-key                           omapi_key;
 <% endif %>
+
 #
 # keys
 #
-<% end %>
 key "dhcp-key" {
-    algorithm   <%= @keyalgo;
-    secret      "<%= @dhcp_key %>;";
+    algorithm                       <%@ keyalgo %>;
+    secret                          "<%= @dhcp_key %>;";
 }
 
 zone 10.168.192.in-addr.arpa {
@@ -104,8 +104,8 @@ shared-network cwsnet {
         option routers                  192.168.10.1;
         option subnet-mask              255.255.255.192;
         option broadcast-address        192.168.10.63;
-        option domain-name              "dynamic.caspersbox.com";
-        option domain-name-servers      192.168.20.6, 192.168.20.7;
+        option domain-name              "<%= @ddnsdomain %>";
+        option domain-name-servers      192.168.20.6, 192.168.20.17, 192.168.20.7;
         option domain-search            "caspersbox.com", "network.caspersbox.com";
         option dhcp-lease-time          604800;
         option auto-proxy-config        "http://wpad.caspersbox.com/wpad.dat";
@@ -114,7 +114,10 @@ shared-network cwsnet {
         next-server                     192.168.10.29;
 
         pool {
-            range                       192.168.10.30 192.168.10.60;
+            <% if @failover == true %>
+            failover                    peer "failover-partner";
+            <% endif %>
+            range                       192.168.10.5 192.168.10.60;
         }
     }
 
@@ -140,97 +143,87 @@ shared-network cwsnet {
         host caspersb-ps4-wired {
             option host-name            "caspersb-ps4";
             hardware ethernet           0c:fe:45:52:f4:6e;
-            fixed-address               192.168.10.4;
+            fixed-address               192.168.10.5;
         }
 
         host caspersb-ps4-wifi {
             option host-name            "caspersb-ps4";
             hardware ethernet           60:5b:b4:91:eb:55;
-            fixed-address               192.168.10.4;
+            fixed-address               192.168.10.5;
         }
 
         host caspersb-wiiu-wired {
             option host-name            "caspersb-wiiu";
             hardware ethernet           00:0e:c6:dc:00:a2;
-            fixed-address               192.168.10.5;
+            fixed-address               192.168.10.6;
         }
 
         host caspersb-wiiu-wifi {
             option host-name            "caspersb-wiiu";
             hardware ethernet           18:2a:7b:8d:b6:0c;
-            fixed-address               192.168.10.5;
+            fixed-address               192.168.10.6;
         }
 
         host google-chromecast {
             option host-name            "google-chromecast";
             hardware ethernet           88:3d:24:13:b6:6e;
-            fixed-address               192.168.10.6;
+            fixed-address               192.168.10.7;
         }
 
         host haileys-laptop {
             option host-name            "i896QW";
             hardware ethernet           00:e0:4c:24:f1:48;
-            fixed-address               192.168.10.10;
+            fixed-address               192.168.10.8;
         }
 
         host haileys-phone {
             option host-name            "haileys-phone";
             hardware ethernet           40:4e:36:84:50:47;
-            fixed-address               192.168.10.11;
+            fixed-address               192.168.10.9;
         }
 
         host arianas-laptop-wired {
             option host-name            "desktop-hatic93-wired";
             hardware ethernet           20:89:84:d2:e8:05;
-            fixed-address               192.168.10.12;
+            fixed-address               192.168.10.10;
         }
 
         host arianas-laptop-wifi {
             option host-name            "desktop-hatic93-wifi";
             hardware ethernet           1c:3e:84:ee:ad:09;
-            fixed-address               192.168.10.13;
+            fixed-address               192.168.10.11;
         }
 
         host arianas-phone {
             option host-name            "arianas-phone";
             hardware ethernet           dc:66:72:e8:14:bf;
-            fixed-address               192.168.10.14;
+            fixed-address               192.168.10.12;
         }
 
         host natalies-phone {
             option host-name            "natalies-phone";
             hardware ethernet           e4:90:7e:59:48:7a;
-            fixed-address               192.168.10.15;
-        }
-
-
-        host mtb-iphone {
-            option host-name            "mtb-iphone";
-            hardware ethernet           98:10:e8:2c:18:2b;
-            fixed-address               192.168.10.16;
-        }
-
-        host pixel2 {
-            option host-name            "pixel2";
-            hardware ethernet           40:4e:36:84:6c:20;
-            fixed-address               192.168.10.17;
+            fixed-address               192.168.10.13;
         }
     }
 
     subnet 192.168.20.0 netmask 255.255.255.224 {
         option routers                  192.168.20.1;
         option subnet-mask              255.255.255.224;
-        option broadcast-address        192.168.20.30;
-        option domain-name              "dynamic.caspersbox.com";
-        option domain-name-servers      192.168.20.6, 192.168.20.7;
+        option broadcast-address        192.168.20.31;
+        option domain-name              "caspersbox.com";
+        option domain-name-servers      192.168.20.6, 192.168.20.17, 192.168.20.7;
         option domain-search            "caspersbox.com", "network.caspersbox.com";
         option dhcp-lease-time          604800;
-        option ntp-servers              192.168.10.1;
+        option ntp-servers              192.168.20.1;
         option bootfile-name            "pxelinux.0";
         next-server                     192.168.10.29;
 
         pool {
-            range                       192.168.20.20 192.168.20.25;
+            <% if @failover == true %>
+            failover                    peer "failover-partner";
+            <% endif %>
+            range                       192.168.20.5 192.168.20.30;
         }
     }
 
@@ -247,58 +240,94 @@ shared-network cwsnet {
             fixed-address               192.168.20.1;
         }
 
+        #
+        # vmware01
+        #
         host caspersb-mdns01 {
             option host-name            "caspersb-mdns01";
-            hardware ethernet           00:0c:29:4a:58:ea;
-            fixed-address               192.168.20.5;
+            hardware ethernet           00:0c:29:cb:24:4a;
+            fixed-address               192.168.20.10;
         }
 
         host caspersb-sdns01 {
             option host-name            "caspersb-sdns01";
-            hardware ethernet           00:0c:29:1c:4a:77;
-            fixed-address               192.168.20.6;
+            hardware ethernet           00:0c:29:d5:e1:cb;
+            fixed-address               192.168.20.11;
         }
 
         host caspersb-sdns02 {
             option host-name            "caspersb-sdns02";
-            hardware ethernet           00:0c:29:77:d1:c3;
-            fixed-address               192.168.20.7;
+            hardware ethernet           00:0c:29:f2:84:7a;
+            fixed-address               192.168.20.12;
         }
 
         host caspersb-dhcp01 {
             option host-name            "caspersb-dhcp01";
-            hardware ethernet           00:0c:29:8e:4e:45;
-            fixed-address               192.168.20.8;
+            hardware ethernet           00:0c:29:4f:08:5b;
+            fixed-address               192.168.20.13;
         }
 
         host caspersb-proxy01 {
             option host-name            "caspersb-proxy01";
             hardware ethernet           00:0c:29:1c:e7:9b;
-            fixed-address               192.168.20.9;
-        }
-
-        host caspersb-proxy02 {
-            option host-name            "caspersb-proxy02";
-            hardware ethernet           00:0c:29:10:de:57;
-            fixed-address               192.168.20.10;
+            fixed-address               192.168.20.14;
         }
 
         host caspersb-websrv01 {
             option host-name            "caspersb-websrv01";
             hardware ethernet           00:0c:29:28:65:74;
-            fixed-address               192.168.20.11;
-        }
-
-        host caspersb-websrv02 {
-            option host-name            "caspersb-websrv02";
-            hardware ethernet           00:0c:29:1c:e7:9b;
-            fixed-address               192.168.20.12;
+            fixed-address               192.168.20.15;
         }
 
         host caspersb-haproxy01 {
             option host-name            "caspersb-haproxy01";
             hardware ethernet           00:0c:29:d0:bb:40;
-            fixed-address               192.168.20.13;
+            fixed-address               192.168.20.16;
+        }
+
+        #
+        # vmware02
+        #
+        host caspersb-mdns02 {
+            option host-name            "caspersb-mdns01";
+            hardware ethernet           00:0c:29:22:d3:ac;
+            fixed-address               192.168.20.20;
+        }
+
+        host caspersb-sdns03 {
+            option host-name            "caspersb-sdns01";
+            hardware ethernet           00:0c:29:d5:e1:cb;
+            fixed-address               192.168.20.21;
+        }
+
+        host caspersb-sdns04 {
+            option host-name            "caspersb-sdns02";
+            hardware ethernet           00:0c:29:f2:84:7a;
+            fixed-address               192.168.20.22;
+        }
+
+        host caspersb-dhcp02 {
+            option host-name            "caspersb-dhcp01";
+            hardware ethernet           00:0c:29:4f:08:5b;
+            fixed-address               192.168.20.23;
+        }
+
+        host caspersb-proxy02 {
+            option host-name            "caspersb-proxy02";
+            hardware ethernet           00:0c:29:10:de:57;
+            fixed-address               192.168.20.24;
+        }
+
+        host caspersb-websrv02 {
+            option host-name            "caspersb-websrv02";
+            hardware ethernet           00:0c:29:1c:e7:9b;
+            fixed-address               192.168.20.25;
+        }
+
+        host caspersb-haproxy01 {
+            option host-name            "caspersb-haproxy01";
+            hardware ethernet           00:0c:29:d0:bb:40;
+            fixed-address               192.168.20.26;
         }
     }
 

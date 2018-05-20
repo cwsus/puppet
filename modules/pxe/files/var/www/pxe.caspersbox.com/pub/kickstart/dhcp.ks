@@ -44,7 +44,7 @@ auth --enableshadow --passalgo=sha512
 #
 text
 install
-url --url http://pxe.caspersbox.com/pub/centos/7/os/x86_64
+url --url http://pxe.caspersbox.com:8080/pub/centos/7/os/x86_64
 
 #
 # Run the Setup Agent on first boot
@@ -55,15 +55,15 @@ firstboot --disable
 # standard groups
 #
 group --name=sudoers  --gid=5000
-group --name=sshusers --gid=5001
+group --name=sshusers --gid=6000
 group --name=dhcpd    --gid=4000
 
 #
 # Create sysadm user
 # generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$1$<SALT>")' | python -
 #
-user --uid=5000 --groups=wheel,sshusers,sudoers --name=sysadm --password=$1$m0cpZEHU$dnqdo9b6Gzw7dZ.s7vu.h/ --iscrypted
-user --uid=4000 --groups=dhcpd                  --name=dhcpd  --password=$1$Po3moNwk$DkuBDN5KS9XkxJCBeTSmE1 --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
+user --uid=4000 --groups=dhcpd                  --name=dhcpd  --password=$6$0iPmPXaknOpgo8yL$1BfYeGjLtSsUfqqJMSc4ObaplZiEXlKIWSzUD0oczQyHW1BKnnR/dTaSzxCXneAhAI7CX9OomFDQbj7s7ZrQs. --iscrypted
 
 #
 # reboot after install
@@ -189,13 +189,10 @@ crontabs
 curl
 less
 nmap
-openssl
 telnet
 traceroute
 zip
 unzip
-apr
-apr-util
 lsof
 ksh
 file
@@ -228,6 +225,9 @@ yum-plugin-verify
 tcpdump
 tmux
 openssl
+openssl-devel
+zlib
+zlib-devel
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -306,23 +306,23 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# dhcp server, install software
-#
-/bin/yum -y install dhcp
-
-#
-# we should get our base dhcp config here
-#
-
-#
 # get the postinstall script
 #
-/bin/wget -O /var/tmp/postinstall.bash http://pxe.caspersbox.com/priv/postinstall.bash
+/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh
 
 #
 # run
 #
-/bin/bash /var/tmp/postinstall.bash 2>&1 | /bin/tee -a /var/tmp/postinstall.log
+/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
+
+#
+# we are a dhcp server, install dhcpd
+#
+/bin/yum -y install dhcp
+
+#
+# get the config
+#
 
 # End of the %post section
 %end
