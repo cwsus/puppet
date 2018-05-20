@@ -146,15 +146,15 @@ volgroup centos --pesize=4096 pv.01
 #
 # logical volumes
 #
-logvol /              --fstype="ext4"  --size=4096 --vgname=centos --name=lv_root      --label=lv_root      --mkfsoptions="-m 1"
-logvol /home          --fstype="ext4"  --size=512  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
-logvol /opt/cws       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_opt-cws   --label=lv_opt-cws   --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
-logvol /tmp           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
-logvol /var           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var       --label=lv_var       --mkfsoptions="-m 1" --fsoptions="rw,nosuid"
-logvol /var/cache     --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-cache --label=lv_var-cache --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
-logvol /var/log       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-log   --label=lv_var-log   --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
-logvol /var/log/audit --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-audit --label=lv_var-audit --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
-logvol swap           --fstype="swap"  --size=3072 --vgname=centos --name=lv_swap      --label=lv_swap                           --fsoptions="swap"
+logvol /              --fstype="xfs"  --size=4096 --vgname=centos --name=lv_root      --label=lv_root      --mkfsoptions="-m 1"
+logvol /home          --fstype="xfs"  --size=512  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
+logvol /opt/cws       --fstype="xfs"  --size=1024 --vgname=centos --name=lv_opt-cws   --label=lv_opt-cws   --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
+logvol /tmp           --fstype="xfs"  --size=1024 --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
+logvol /var           --fstype="xfs"  --size=1024 --vgname=centos --name=lv_var       --label=lv_var       --mkfsoptions="-m 1" --fsoptions="rw,nosuid"
+logvol /var/cache     --fstype="xfs"  --size=1024 --vgname=centos --name=lv_var-cache --label=lv_var-cache --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
+logvol /var/log       --fstype="xfs"  --size=1024 --vgname=centos --name=lv_var-log   --label=lv_var-log   --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
+logvol /var/log/audit --fstype="xfs"  --size=1024 --vgname=centos --name=lv_var-audit --label=lv_var-audit --mkfsoptions="-m 0" --fsoptions="rw,nodev,noexec,nosuid"
+logvol swap           --fstype="swap" --size=3072 --vgname=centos --name=lv_swap      --label=lv_swap                           --fsoptions="swap"
 
 #
 # add extra repos

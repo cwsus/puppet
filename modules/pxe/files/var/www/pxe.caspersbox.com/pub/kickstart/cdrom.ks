@@ -59,9 +59,9 @@ group --name=sshusers --gid=6000
 
 #
 # Create sysadm user
-# generate password with python -c 'import crypt; print(crypt.crypt("<password>", "$6$<salt>"))'
+# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$0iPmPXaknOpgo8yL")' | python -
 #
-user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$Tjw0yhbwGAUXgMje$egQ8QlUr05jjX.mQDKJRTa2uHMWiUA.ZVNT2Prh/77DUcC.ZPQHDh8CGRyjA5oZVIf8tmvYLVLzKz4XmeChKH/ --iscrypted
+user --uid=5001 --groups=wheel,sshusers,sudoers --name=sysadm --password=$6$0iPmPXaknOpgo8yL$PJB13TijD92fUCeVY9Be/itN47Xp2AM5e46LatwjxxXgEp5GhPy58gPnDnciJNwvSQTEIPQ4abdTMQKyWULaS0 --iscrypted
 
 #
 # reboot after install
@@ -81,7 +81,7 @@ lang en_US.UTF-8
 #
 # Network information
 #
-network --device=link --bootproto=dhcp --ethtool="autoneg on gro off lro off" --mtu=1500 --noipv6 --activate --onboot=yes --hostname=localhost.localdomain
+network --device=bootif --bootproto=dhcp --ethtool="autoneg on gro off lro off" --mtu=1500 --noipv6 --activate --onboot=yes --hostname=localhost.localdomain
 
 #
 # disable firewall/selinux
@@ -106,9 +106,9 @@ services --enabled="chronyd"
 
 #
 # root password
-# generate password with python -c 'import crypt; print(crypt.crypt("<password>", "$6$<salt>"))'
+# generate password with echo 'import crypt,getpass; print crypt.crypt(getpass.getpass(), "$6$<16 CHAR SALT>")' | python -
 #
-rootpw --iscrypted <password>
+rootpw --iscrypted $6$0iPmPXaknOpgo8yL$PJB13TijD92fUCeVY9Be/itN47Xp2AM5e46LatwjxxXgEp5GhPy58gPnDnciJNwvSQTEIPQ4abdTMQKyWULaS0
 
 #
 # System timezone
@@ -147,7 +147,8 @@ volgroup centos --pesize=4096 pv.01
 # logical volumes
 #
 logvol /              --fstype="ext4"  --size=4096 --vgname=centos --name=lv_root      --label=lv_root      --mkfsoptions="-m 1"
-logvol /home          --fstype="ext4"  --size=100  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
+logvol /home          --fstype="ext4"  --size=512  --vgname=centos --name=lv_home      --label=lv_home      --mkfsoptions="-m 0" --fsoptions="rw,nodev,nosuid"
+logvol /opt/cws       --fstype="ext4"  --size=1024 --vgname=centos --name=lv_opt-cws   --label=lv_opt-cws   --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /tmp           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_tmp       --label=lv_tmp       --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
 logvol /var           --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var       --label=lv_var       --mkfsoptions="-m 1" --fsoptions="rw,nosuid"
 logvol /var/cache     --fstype="ext4"  --size=1024 --vgname=centos --name=lv_var-cache --label=lv_var-cache --mkfsoptions="-m 1" --fsoptions="rw,nodev,noexec,nosuid"
@@ -225,6 +226,12 @@ openssl
 openssl-devel
 zlib
 zlib-devel
+pam-devel
+gcc-c++
+net-tools
+policycoreutils-python
+checkpolicy
+bzip2
 -kexec-tools
 -aic94xx-firmware*
 -alsa-*
@@ -303,14 +310,172 @@ pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
 %post --log=/root/ks-post.log
 
 #
-# get the postinstall script
+# nameservers - i think we need them
 #
-/bin/wget -O /var/tmp/postinstall-base.sh http://pxe.caspersbox.com:8080/priv/postinstall-base.sh
+echo "nameserver 8.8.4.4" > /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+
+echo "[duosecurity]
+name=Duo Security Repository
+baseurl=http://pkg.duosecurity.com/CentOS/$releasever/$basearch
+enabled=1
+gpgcheck=1" > /etc/yum.repos.d/duosecurity.repo
 
 #
-# run
+# import epel/puppet keys
 #
-/bin/bash /var/tmp/postinstall-base.sh 2>&1 | /bin/tee -a /var/tmp/postinstall-base.log
+/bin/rpmkeys --import http://ftp.cse.buffalo.edu/pub/epel/RPM-GPG-KEY-EPEL-7
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppetlabs
+/bin/rpmkeys --import http://yum.puppetlabs.com/RPM-GPG-KEY-puppet
+/bin/rpmkeys --import https://duo.com/RPM-GPG-KEY-DUO
+
+#
+# maybe we can yum update?
+#
+/bin/yum -y install epel-release https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+
+#
+# update yum repos...
+#
+/bin/yum -y update
+
+#
+# if the above works then this should too...
+#
+/bin/yum -y install procenv systemd-networkd systemd-resolved rkhunter clamav clamav-data duo_unix \
+    clamav-filesystem clamav-lib clamav-scanner clamav-scanner-systemd clamav-unofficial-sigs \
+    clamav-update yum-updateonboot yum-plugin-show-leaves yum-plugin-remove-with-leaves duo_unix \
+    yum-plugin-ps yum-plugin-keys yum-plugin-upgrade-helper yum-plugin-merge-conf puppet google-authenticator
+
+#
+# add entries to fstab
+#
+echo "/dev/cdrom    /mnt/cdrom    iso9660 ro,noexec,nosuid,nodev,noauto    0 0" >> /etc/fstab
+echo "/var/tmp      /tmp          none    rw,nodev,noexec,nosuid,bind      0 0" >> /etc/fstab
+echo "tmpfs         /dev/shm      tmpfs   rw,nodev,noexec,nosuid           0 0" >> /etc/fstab
+echo "proc          /proc         proc    rw,hidepid=2                     0 0" >> /etc/fstab
+
+#
+# mkdir
+#
+mkdir -pv /etc/systemd/network
+
+cd /
+cp -Rp /mnt/sysimage/files/* .
+
+#
+# update cfg
+#
+/bin/sed -e "s^@macaddress^${MACADDR}^g" -e "s^@name^${NETDEV}^g" -e "s^@vlan^${VLANID}^g" \
+    -e "s^@ipaddr^${IPADDR}^g" -e "s^@netmask^${NETMASK}^g" \
+    -e "s^@gateway^${GATEWAY}^g" /etc/systemd/network/network.network > /etc/systemd/network/${NETDEV}.network;
+/bin/rm -f /etc/systemd/network/network.network;
+
+/bin/sed -e "s^@vlanname^${VLANNAME}^g" -e "s^@vlanid^${VLANID}^g" \
+    /etc/systemd/network/vlan.netdev > /etc/systemd/network/${VLANNAME}.netdev;
+/bin/rm -f etc/systemd/network/vlan.netdev;
+
+/bin/sed -e "s^@hostname^${HOSTNAME}^g" /etc/sysconfig/networking > /etc/sysconfig/networking.new
+/bin/rm -f /etc/sysconfig/networking;
+/bin/mv /etc/sysconfig/networking.new /etc/sysconfig/networking
+
+/bin/sed -e "s^@macaddress^${MACADDR}^g" -e "s^@netdev^${NETDEV}^g" \
+    /etc/udev/rules.d/network.persistent.rules > /etc/udev/rules.d/network.persistent.rules.new
+/bin/mv /etc/systemd/network/network_persistent.rules.new /etc/systemd/network/network_persistent.rules;
+/bin/rm -f /etc/systemd/network/network_persistent.rules.new;
+
+#
+# services
+#
+/bin/systemctl enable aide.timer
+/bin/systemctl enable freshclam.timer
+/bin/systemctl enable puppet-agent.timer
+/bin/systemctl enable rkhunter-update.timer
+/bin/systemctl enable yum-daily-update.timer
+/bin/systemctl enable yum-weekly-update.timer
+/bin/systemctl enable sshd.service
+/bin/systemctl enable systemd-networkd.service
+/bin/systemctl enable systemd-resolved.service
+
+#
+# masking
+#
+systemctl stop kdump.service
+systemctl stop firewalld.service
+systemctl disable kdump.service
+systemctl disable firewalld.service
+systemctl mask firewalld.service
+systemctl mask ctrl-alt-del.target
+systemctl mask kdump.service
+
+#
+# disable usb support and add audit
+#
+typeset CURRENT_GRUB_CMDLINE="$(/bin/grep GRUB_CMDLINE_LINUX /etc/default/grub)"
+typeset NEW_GRUB_CMDLINE="$(echo ${CURRENT_GRUB_CMDLINE} | /bin/sed -e "s/\"$/ nousb audit=1\"/g")"
+/bin/sed -ie "s/${CURRENT_GRUB_CMDLINE}/${NEW_GRUB_CMDLINE}/" /etc/default/grub
+
+/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg
+
+#
+# remove default "sysadm" group
+#
+/sbin/usermod -g users -G sshusers,sudoers sysadm
+/sbin/groupdel sysadm
+
+#
+# run puppet
+#
+/bin/puppet agent apply
+
+#
+# enable the service
+#
+/bin/systemctl enable puppet
+
+#
+# remove unused users
+#
+/sbin/userdel shutdown
+/sbin/userdel halt
+/sbin/userdel games
+/sbin/userdel operator
+/sbin/userdel ftp
+/sbin/userdel news
+/sbin/userdel gopher
+
+#
+# remove unused groups
+#
+/sbin/groupdel games
+
+#
+# permissions
+#
+/bin/chmod 640 /etc/syslog.conf /etc/security/access.conf /etc/crontab /etc/sysctl.conf
+/bin/chmod -R 750 /var/log/audit /usr/share/logwatch/scripts/logwatch.pl /var/crash /etc/skel
+/bin/chown -R root. /var/crash
+
+#
+# updates for clam/rkhunter
+#
+/bin/rkhunter --propupdate --update
+/bin/freshclam -v
+
+#
+# aide init
+#
+/usr/sbin/aide --init
+/bin/cp /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz
+/usr/sbin/aide --check
+
+#
+# prelinking
+#
+/bin/sed -i "s/PRELINKING=.*/PRELINKING=no/g" /etc/sysconfig/prelink
+/sbin/prelink -ua
+
+
 
 # End of the %post section
 %end
