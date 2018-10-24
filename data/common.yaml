@@ -3,38 +3,8 @@
 #
 # base config
 #
-packages::is_dhcp: true
-
-#
-# named
-#
-profile::named::groupname: named
-profile::named::username: named
-profile::named::groupid: 5005
-profile::named::userid: 5005
-profile::named::config::masterserver: caspersb-mdns01
-
-profile::named::servers:
-  caspersb-sdns01:
-    id: 'caspersb-sdns01'
-    address: '192.168.20.6'
-  caspersb-sdns02:
-    id: 'caspersb-sdns02'
-    address: '192.168.20.7'
-
-profile::named::keys:
-  rndc-key:
-    id: 'rndc-key'
-    algo: 'HMAC-MD5'
-    bitsize: 512
-  dhcp-key:
-    id: 'dhcp-key'
-    algo: 'HMAC-MD5'
-    bitsize: 512
-  xfer-key:
-    id: 'xfer-key'
-    algo: 'HMAC-MD5'
-    bitsize: 512
+profile:
+  profile::base
 
 classes:
   role::base
