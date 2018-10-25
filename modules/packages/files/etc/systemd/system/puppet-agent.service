@@ -1,0 +1,6 @@
+[Unit]
+Description=Run Puppet Agent to apply configuration changes
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env puppet agent

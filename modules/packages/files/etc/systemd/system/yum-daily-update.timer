@@ -1,0 +1,9 @@
+[Unit]
+Description=YUM daily update
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=True
+
+[Install]
+WantedBy=basic.target

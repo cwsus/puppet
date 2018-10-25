@@ -1,0 +1,6 @@
+[Unit]
+Description=Freshclam
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/freshclam --quiet

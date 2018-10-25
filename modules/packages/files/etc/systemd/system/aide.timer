@@ -1,0 +1,10 @@
+[Unit]
+Description=AIDE Security Configuration Check
+
+[Timer]
+OnBootSec=15min
+OnCalendar=*-*-* 08:00:00
+Persistent=True
+
+[Install]
+WantedBy=basic.target

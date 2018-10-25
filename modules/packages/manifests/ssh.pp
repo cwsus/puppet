@@ -22,7 +22,7 @@ class packages::ssh (
         owner               => 'root',
         group               => 'root',
         mode                => '0644',
-        content             => template('packages/sshd_config.erb'),
+        content             => template('templates/sshd_config.erb'),
     }
 
     file { '/etc/ssh/sshd_banner':
